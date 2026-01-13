@@ -1,0 +1,38 @@
+# --- Maven ---
+target/
+*.log
+dependency-reduced-pom.xml
+
+# --- IDEs (IntelliJ IDEA) ---
+.idea/
+*.iml
+*.iws
+out/
+
+# --- IDEs (Eclipse) ---
+.classpath
+.project
+.settings/
+bin/
+
+# --- IDEs (VS Code) ---
+.vscode/
+
+# --- OS System Files ---
+.DS_Store
+Thumbs.db
+
+# --- SparkWord Specific Runtime Data ---
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+/database/
+
+# Ignore test logs if generated in root
+/logs/
+/debug/
+
+# --- Miscellaneous ---
+words/*.bak
+words/*.tmp

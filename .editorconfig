@@ -1,0 +1,30 @@
+root = true
+
+# All files
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Java files (Standard formatting)
+[*.java]
+indent_size = 4
+continuation_indent_size = 8
+
+# YAML (Configuration files - Standard for Spigot/Paper)
+[*.{yml,yaml}]
+indent_size = 2
+
+# XML (Maven POM)
+[*.xml]
+indent_size = 4
+
+# JSON (Data files)
+[*.json]
+indent_size = 2
+
+# Markdown (Documentation)
+[*.md]
+trim_trailing_whitespace = false

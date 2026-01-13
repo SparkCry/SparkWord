@@ -1,0 +1,76 @@
+name: SparkWord
+version: '${project.version}'
+main: com.sparkword.SparkWord
+description: Advanced Moderation Plugin
+api-version: '1.21'
+authors: SparkCry
+website: https://github.com/SparkCry/SparkWord
+
+permissions:
+  sparkword.*:
+    description: Full access to the plugin
+    children:
+      sparkword.admin: true
+      sparkword.moderator: true
+    default: false
+
+  sparkword.suggest:
+    description: Allows players to submit word suggestions.
+    default: true
+
+  sparkword.admin:
+    description: Admin access including debugging, purging, and strict mutes.
+    children:
+      sparkword.reload: true
+      sparkword.add: true
+      sparkword.remove: true
+      sparkword.permute: true
+      sparkword.notify.icon: true
+      sparkword.purge.*: true
+      sparkword.bypass.*: true
+      sparkword.debug: true
+    default: op
+
+  sparkword.moderator:
+    description: Standard moderation access.
+    children:
+      sparkword.info: true
+      sparkword.list: true
+      sparkword.accept: true
+      sparkword.deny: true
+      sparkword.mute: true
+      sparkword.unmute: true
+      sparkword.tempmute: true
+      sparkword.checkmute: true
+      sparkword.scan: true
+      sparkword.warn: true
+      sparkword.notify: true
+      sparkword.audit: true
+      sparkword.logs: true
+    default: false
+
+  sparkword.purge.*:
+    description: Group permission for all purge actions.
+    children:
+      sparkword.purge.logs: true
+      sparkword.purge.suggest: true
+      sparkword.purge.warning: true
+      sparkword.purge.mute: true
+      sparkword.purge.audit: true
+    default: false
+
+  sparkword.bypass.*:
+    description: Group permission for all bypasses.
+    children:
+      sparkword.bypass.chat: true
+      sparkword.bypass.sign: true
+      sparkword.bypass.books: true
+      sparkword.bypass.anvils: true
+      sparkword.bypass.spam: true
+      sparkword.bypass.writecommands: true
+      sparkword.bypass.injection: true
+      sparkword.bypass.symbol.all: true
+      sparkword.bypass.ip: true
+      sparkword.bypass.ip.split: true
+      sparkword.bypass.cooldown: true
+    default: false

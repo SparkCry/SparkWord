@@ -1,0 +1,23 @@
+commands:
+  alias:
+    sw-sg:
+      - "suggest"
+      - "proposal"
+    sw-mute:
+      - "mute"
+      - "silence"
+    sw-unmute:
+      - "unmute"
+      - "allowchat"
+    sw-tempmute:
+      - "tempmute"
+      - "tmute"
+    sw-checkmute:
+      - "checkmute"
+      - "muteinfo"
+    sw-warn:
+      - "warn"
+      - "alert"
+    sw-scan:
+      - "scan"
+      - "history"

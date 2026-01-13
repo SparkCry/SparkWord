@@ -1,0 +1,21 @@
+# Auto-detect text files and normalize line endings to LF on checkout
+* text=auto
+
+# Explicitly declare text files
+*.java text diff=java
+*.xml text
+*.yml text
+*.yaml text
+*.txt text
+*.md text
+*.properties text
+
+# Git configuration files
+.gitignore text
+.gitattributes text
+.editorconfig text
+
+# Binary files (Do not try to merge these)
+*.jar binary
+*.db binary
+*.sqlite binary
