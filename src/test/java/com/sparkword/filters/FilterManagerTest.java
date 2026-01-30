@@ -17,14 +17,16 @@
  */
 package com.sparkword.filters;
 
+import com.sparkword.Environment;
 import com.sparkword.SparkWord;
 import com.sparkword.core.ConfigManager;
-import com.sparkword.core.Environment;
-import com.sparkword.filters.word.WordFilter;
-import com.sparkword.filters.word.WordFilterMode;
-import com.sparkword.filters.word.engine.AhoCorasickEngine;
-import com.sparkword.filters.word.loader.WordListLoader;
-import com.sparkword.filters.word.result.FilterResult;
+import com.sparkword.core.config.FilterSettings;
+import com.sparkword.moderation.filters.FilterManager;
+import com.sparkword.moderation.filters.word.WordFilter;
+import com.sparkword.moderation.filters.word.WordFilterMode;
+import com.sparkword.moderation.filters.word.engine.AhoCorasickEngine;
+import com.sparkword.moderation.filters.word.loader.WordListLoader;
+import com.sparkword.moderation.filters.word.result.FilterResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -44,10 +46,16 @@ class FilterManagerTest {
 
     private FilterManager filterManager;
 
-    @Mock private SparkWord plugin;
-    @Mock private Environment environment;
-    @Mock private ConfigManager configManager;
-    @Mock private WordListLoader wordListLoader;
+    @Mock
+    private SparkWord plugin;
+    @Mock
+    private Environment environment;
+    @Mock
+    private ConfigManager configManager;
+    @Mock
+    private FilterSettings filterSettings;
+    @Mock
+    private WordListLoader wordListLoader;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -57,6 +65,7 @@ class FilterManagerTest {
         when(plugin.getLogger()).thenReturn(Logger.getGlobal());
         when(environment.getConfigManager()).thenReturn(configManager);
 
+        when(configManager.getFilterSettings()).thenReturn(filterSettings);
         when(configManager.isUnicodeEnabled()).thenReturn(true);
         when(configManager.isReplacementEnabled()).thenReturn(false);
 
@@ -65,13 +74,13 @@ class FilterManagerTest {
         Map<WordFilterMode, WordFilter> activeFilters = getPrivateMap(filterManager, "activeFilters");
 
         activeFilters.put(WordFilterMode.NORMAL,
-                new WordFilter(AhoCorasickEngine.fromWords(Set.of("vaca")), WordFilterMode.NORMAL));
+            new WordFilter(AhoCorasickEngine.fromWords(Set.of("vaca")), WordFilterMode.NORMAL));
 
         activeFilters.put(WordFilterMode.STRONG,
-                new WordFilter(AhoCorasickEngine.fromWords(Set.of("gato")), WordFilterMode.STRONG));
+            new WordFilter(AhoCorasickEngine.fromWords(Set.of("gato")), WordFilterMode.STRONG));
 
         activeFilters.put(WordFilterMode.WRITE_COMMAND,
-                new WordFilter(AhoCorasickEngine.fromWords(Set.of("mod")), WordFilterMode.WRITE_COMMAND));
+            new WordFilter(AhoCorasickEngine.fromWords(Set.of("mod")), WordFilterMode.WRITE_COMMAND));
     }
 
     @SuppressWarnings("unchecked")
@@ -81,41 +90,41 @@ class FilterManagerTest {
         return (Map<WordFilterMode, WordFilter>) field.get(target);
     }
 
-    @DisplayName("Filtro NORMAL: Palabra 'vaca' y evasiones")
+    @DisplayName("NORMAL Filter: Word 'vaca' and evasions")
     @ParameterizedTest(name = "Input: {0}")
     @ValueSource(strings = {
-            "vaca", "Vaca", "vAca", "VACA",
-            "v a c a", "v.a.c.a", "v/a/c/a",
-            "Va/ca", "V/aca", "Vac/a",
-            "v-a-c-a", "v⚡a⚡c⚡a"
+        "vaca", "Vaca", "vAca", "VACA",
+        "v a c a", "v.a.c.a", "v/a/c/a",
+        "Va/ca", "V/aca", "Vac/a",
+        "v-a-c-a", "v⚡a⚡c⚡a"
     })
     void testNormalVaca(String input) {
         FilterResult result = filterManager.processText(input, false, null);
         assertTrue(result.blocked() || !result.detectedWords().isEmpty(),
-                "No detectó 'vaca' → input=" + input + " result=" + result);
+            "Did not detect 'vaca' → input=" + input + " result=" + result);
     }
 
-    @DisplayName("Filtro STRONG: Palabra 'gato' y evasiones extremas")
+    @DisplayName("STRONG Filter: Word 'gato' and extreme evasions")
     @ParameterizedTest(name = "Input: {0}")
     @ValueSource(strings = {
-            "gato", "Gato", "G.ato", "Gat.o",
-            "g a t o", "g.a.t.o", "g/a/t/o",
-            "g-a-t-o", "g⚡a⚡t⚡o", "GATO", "GaTo"
+        "gato", "Gato", "G.ato", "Gat.o",
+        "g a t o", "g.a.t.o", "g/a/t/o",
+        "g-a-t-o", "g⚡a⚡t⚡o", "GATO", "GaTo"
     })
     void testStrongGato(String input) {
         FilterResult result = filterManager.processText(input, false, null);
         assertTrue(result.blocked() || !result.detectedWords().isEmpty(),
-                "No detectó 'gato' → input=" + input + " result=" + result);
+            "Did not detect 'gato' → input=" + input + " result=" + result);
     }
 
-    @DisplayName("Filtro WRITE_COMMAND: Palabra 'mod'")
+    @DisplayName("WRITE_COMMAND Filter: Word 'mod'")
     @ParameterizedTest(name = "Input: {0}")
     @ValueSource(strings = {
-            "mod", "Mod", "MOD", "m.o.d"
+        "mod", "Mod", "MOD", "m.o.d"
     })
     void testCommandMod(String input) {
         FilterResult result = filterManager.processWriteCommand(input);
         assertTrue(result.blocked(),
-                "No bloqueó comando 'mod' → input=" + input);
+            "Did not block command 'mod' → input=" + input);
     }
 }

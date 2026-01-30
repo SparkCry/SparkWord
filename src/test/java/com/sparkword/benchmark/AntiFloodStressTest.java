@@ -17,13 +17,14 @@
  */
 package com.sparkword.benchmark;
 
+import com.sparkword.Environment;
 import com.sparkword.SparkWord;
 import com.sparkword.core.ConfigManager;
-import com.sparkword.core.Environment;
 import com.sparkword.core.NotifyManager;
-import com.sparkword.spammers.SpamContext;
-import com.sparkword.spammers.SpamManager;
-import com.sparkword.spammers.checks.AntiFloodCheck;
+import com.sparkword.core.config.AntiSpamSettings;
+import com.sparkword.moderation.antispam.SpamContext;
+import com.sparkword.moderation.antispam.SpamManager;
+import com.sparkword.moderation.antispam.checks.AntiFloodCheck;
 import com.sparkword.util.BenchmarkReporter;
 import org.bukkit.entity.Player;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,12 +44,20 @@ class AntiFloodStressTest {
 
     private AntiFloodCheck antiFloodCheck;
 
-    @Mock private SparkWord plugin;
-    @Mock private Environment environment;
-    @Mock private ConfigManager configManager;
-    @Mock private NotifyManager notifyManager;
-    @Mock private SpamManager spamManager;
-    @Mock private Player player;
+    @Mock
+    private SparkWord plugin;
+    @Mock
+    private Environment environment;
+    @Mock
+    private ConfigManager configManager;
+    @Mock
+    private AntiSpamSettings antiSpamSettings;
+    @Mock
+    private NotifyManager notifyManager;
+    @Mock
+    private SpamManager spamManager;
+    @Mock
+    private Player player;
 
     @BeforeEach
     void setUp() {
@@ -60,11 +69,13 @@ class AntiFloodStressTest {
         when(environment.getConfigManager()).thenReturn(configManager);
         when(environment.getNotifyManager()).thenReturn(notifyManager);
 
+        when(configManager.getAntiSpamSettings()).thenReturn(antiSpamSettings);
         when(configManager.isAntiFloodEnabled()).thenReturn(true);
         when(configManager.getAntiFloodMessages()).thenReturn(5);
         when(configManager.getAntiFloodDelay()).thenReturn(100);
 
-        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+        UUID fixedUUID = UUID.fromString("00000000-0000-0000-0000-000000000001");
+        when(player.getUniqueId()).thenReturn(fixedUUID);
         when(player.getName()).thenReturn("SpamBot");
         when(player.hasPermission(anyString())).thenReturn(false);
 
@@ -72,7 +83,7 @@ class AntiFloodStressTest {
     }
 
     @Test
-    @DisplayName("Eficiencia Anti-Flood: 10,000 Mensajes en Ráfaga")
+    @DisplayName("Anti-Flood Efficiency: 10,000 Burst Messages")
     void testAntiFloodPerformance() {
         int totalMessages = 10000;
         SpamContext context = new SpamContext("Spam message", "spam message", "Chat", false, null, -1, true);
@@ -97,7 +108,7 @@ class AntiFloodStressTest {
         BenchmarkReporter.log("AntiFlood", "avg_processing_time", String.format("%.2f", avgNs), "ns");
         BenchmarkReporter.log("AntiFlood", "blocked_messages", blockedCount, "msgs");
 
-        assertTrue(avgNs < 150000, "Chequeo demasiado lento.");
-        assertTrue(blockedCount > 9900, "Anti-Flood no bloqueó lo suficiente.");
+        assertTrue(avgNs < 150000, "Check too slow.");
+        assertTrue(blockedCount > 9900, "Anti-Flood did not block enough. Blocked: " + blockedCount);
     }
 }

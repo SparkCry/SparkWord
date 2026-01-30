@@ -17,8 +17,8 @@
  */
 package com.sparkword.commands.impl.root;
 
+import com.sparkword.Environment;
 import com.sparkword.commands.SubCommand;
-import com.sparkword.core.Environment;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
@@ -46,7 +46,8 @@ public class InfoCommand implements SubCommand {
         if (args.length > 0) {
             try {
                 page = Integer.parseInt(args[0]);
-            } catch (NumberFormatException ignored) {}
+            } catch (NumberFormatException ignored) {
+            }
         }
 
         if (page < 1 || page > 2) {
@@ -63,29 +64,29 @@ public class InfoCommand implements SubCommand {
         sender.sendMessage(separator);
 
         if (page == 1) {
-            sendHelpLine(sender, "system.help.info");
-            sendHelpLine(sender, "system.help.suggest");
-            sendHelpLine(sender, "system.help.scan");
-            sendHelpLine(sender, "system.help.checkmute");
-            sendHelpLine(sender, "system.help.warn");
-            sendHelpLine(sender, "system.help.mute");
-            sendHelpLine(sender, "system.help.tempmute");
-            sendHelpLine(sender, "system.help.unmute");
-            sendHelpLine(sender, "system.help.permute");
+            sendHelpLine(sender, "help.info");
+            sendHelpLine(sender, "help.suggest");
+            sendHelpLine(sender, "help.scan");
+            sendHelpLine(sender, "help.checkmute");
+            sendHelpLine(sender, "help.warn");
+            sendHelpLine(sender, "help.mute");
+            sendHelpLine(sender, "help.tempmute");
+            sendHelpLine(sender, "help.unmute");
+            sendHelpLine(sender, "help.permute");
 
             sender.sendMessage(Component.empty());
-            sender.sendMessage(env.getMessageManager().getComponent("system.help.footer-next", Map.of("page", "2"), false));
+            sender.sendMessage(env.getMessageManager().getComponent("help.footer-next", Map.of("page", "2"), false));
         } else {
-            sendHelpLine(sender, "system.help.list");
-            sendHelpLine(sender, "system.help.add");
-            sendHelpLine(sender, "system.help.remove");
-            sendHelpLine(sender, "system.help.accept");
-            sendHelpLine(sender, "system.help.deny");
-            sendHelpLine(sender, "system.help.audit");
-            sendHelpLine(sender, "system.help.logs");
-            sendHelpLine(sender, "system.help.purge");
-            sendHelpLine(sender, "system.help.reload");
-            sendHelpLine(sender, "system.help.debug");
+            sendHelpLine(sender, "help.list");
+            sendHelpLine(sender, "help.add");
+            sendHelpLine(sender, "help.remove");
+            sendHelpLine(sender, "help.accept");
+            sendHelpLine(sender, "help.deny");
+            sendHelpLine(sender, "help.audit");
+            sendHelpLine(sender, "help.logs");
+            sendHelpLine(sender, "help.purge");
+            sendHelpLine(sender, "help.reload");
+            sendHelpLine(sender, "help.debug");
         }
 
         sender.sendMessage(separator);

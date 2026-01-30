@@ -17,12 +17,13 @@
  */
 package com.sparkword.benchmark;
 
+import com.sparkword.Environment;
 import com.sparkword.SparkWord;
 import com.sparkword.core.ConfigManager;
-import com.sparkword.core.Environment;
-import com.sparkword.filters.FilterManager;
-import com.sparkword.filters.word.WordFilterMode;
-import com.sparkword.filters.word.loader.WordListLoader;
+import com.sparkword.core.config.FilterSettings;
+import com.sparkword.moderation.filters.FilterManager;
+import com.sparkword.moderation.filters.word.WordFilterMode;
+import com.sparkword.moderation.filters.word.loader.WordListLoader;
 import com.sparkword.util.BenchmarkReporter;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -48,12 +49,16 @@ class ChatBenchmarkTest {
         SparkWord plugin = mock(SparkWord.class);
         Environment env = mock(Environment.class);
         ConfigManager config = mock(ConfigManager.class);
+        FilterSettings filterSettings = mock(FilterSettings.class);
 
         when(plugin.getLogger()).thenReturn(Logger.getGlobal());
         when(plugin.getEnvironment()).thenReturn(env);
         when(env.getConfigManager()).thenReturn(config);
-        when(config.isUnicodeEnabled()).thenReturn(true);
-        when(config.getGlobalReplacement()).thenReturn("****");
+
+        when(config.getFilterSettings()).thenReturn(filterSettings);
+        when(filterSettings.isUnicodeEnabled()).thenReturn(true);
+        when(filterSettings.isReplacementEnabled()).thenReturn(false);
+        when(filterSettings.getGlobalReplacement()).thenReturn("****");
 
         Set<String> heavyDictionary = generateRandomWords(DICTIONARY_SIZE);
 
@@ -62,8 +67,9 @@ class ChatBenchmarkTest {
 
         long startBuild = System.nanoTime();
 
-        filterManager = new FilterManager(plugin);
-        injectLoader(filterManager, loader);
+        filterManager = new FilterManager(plugin, loader);
+
+        filterManager.loadFilters().join();
 
         long endBuild = System.nanoTime();
         BenchmarkReporter.log("ChatBenchmark", "trie_build_time", (endBuild - startBuild) / 1_000_000.0, "ms");
@@ -84,18 +90,15 @@ class ChatBenchmarkTest {
         return words;
     }
 
-    private static void injectLoader(FilterManager fm, WordListLoader loader) throws Exception {
-        java.lang.reflect.Field f = FilterManager.class.getDeclaredField("loader");
-        f.setAccessible(true);
-        f.set(fm, loader);
-        fm.loadFilters();
-    }
-
     @Test
-    @DisplayName("Stress Test: Procesamiento con Diccionario 5k")
+    @DisplayName("Stress Test: Processing with 5k Word Dictionary")
     void testHeavyDictionaryProcessing() {
-        String cleanMsg = "Hola amigo como estas";
-        String dirtyMsg = "Hola " + generateRandomWords(1).iterator().next();
+        String cleanMsg = "Hello friend how are you doing today";
+        String dirtyMsg = "Hello " + generateRandomWords(1).iterator().next() + " world";
+
+        for (int i = 0; i < 1000; i++) {
+            filterManager.processText(cleanMsg, false, null);
+        }
 
         long start = System.nanoTime();
 
@@ -109,7 +112,7 @@ class ChatBenchmarkTest {
         BenchmarkReporter.log("ChatBenchmark", "avg_scan_latency_5k_words", String.format("%.0f", avgNs), "ns");
 
         if (avgNs > 250_000) {
-            BenchmarkReporter.alert("ChatBenchmark", "Latencia crítica en filtrado (>0.25ms)");
+            BenchmarkReporter.alert("ChatBenchmark", "Critical filter latency (>0.25ms)");
         }
     }
 }

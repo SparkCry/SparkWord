@@ -17,17 +17,18 @@
  */
 package com.sparkword.benchmark;
 
+import com.sparkword.Environment;
 import com.sparkword.SparkWord;
 import com.sparkword.core.ConfigManager;
-import com.sparkword.core.Environment;
 import com.sparkword.core.NotifyManager;
-import com.sparkword.spammers.SpamCheck;
-import com.sparkword.spammers.SpamContext;
-import com.sparkword.spammers.SpamManager;
-import com.sparkword.spammers.SpamManager.SpamResult;
-import com.sparkword.spammers.checks.AntiFloodCheck;
-import com.sparkword.spammers.checks.DomainCheck;
-import com.sparkword.spammers.checks.IPCheck;
+import com.sparkword.core.config.AntiSpamSettings;
+import com.sparkword.moderation.antispam.SpamCheck;
+import com.sparkword.moderation.antispam.SpamContext;
+import com.sparkword.moderation.antispam.SpamManager;
+import com.sparkword.moderation.antispam.SpamManager.SpamResult;
+import com.sparkword.moderation.antispam.checks.AntiFloodCheck;
+import com.sparkword.moderation.antispam.checks.DomainCheck;
+import com.sparkword.moderation.antispam.checks.IPCheck;
 import com.sparkword.util.BenchmarkReporter;
 import org.bukkit.entity.Player;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,12 +47,20 @@ class BotAttackBenchmarkTest {
 
     private List<SpamCheck> pipeline;
 
-    @Mock private SparkWord plugin;
-    @Mock private Environment environment;
-    @Mock private ConfigManager configManager;
-    @Mock private NotifyManager notifyManager;
-    @Mock private SpamManager spamManager;
-    @Mock private Player botPlayer;
+    @Mock
+    private SparkWord plugin;
+    @Mock
+    private Environment environment;
+    @Mock
+    private ConfigManager configManager;
+    @Mock
+    private AntiSpamSettings antiSpamSettings;
+    @Mock
+    private NotifyManager notifyManager;
+    @Mock
+    private SpamManager spamManager;
+    @Mock
+    private Player botPlayer;
 
     @BeforeEach
     void setUp() {
@@ -62,10 +71,12 @@ class BotAttackBenchmarkTest {
         when(environment.getConfigManager()).thenReturn(configManager);
         when(environment.getNotifyManager()).thenReturn(notifyManager);
 
+        when(configManager.getAntiSpamSettings()).thenReturn(antiSpamSettings);
         when(configManager.isDomainEnabled()).thenReturn(true);
         when(configManager.isAntiFloodEnabled()).thenReturn(true);
         when(configManager.getAntiFloodMessages()).thenReturn(20);
         when(configManager.getAntiFloodDelay()).thenReturn(1000);
+        when(configManager.isIpEnabled()).thenReturn(true);
 
         when(botPlayer.getUniqueId()).thenReturn(UUID.randomUUID());
         when(botPlayer.hasPermission(anyString())).thenReturn(false);
@@ -77,14 +88,12 @@ class BotAttackBenchmarkTest {
     }
 
     @Test
-    @DisplayName("Stress Test: Pipeline Completo bajo Ataque Bot (5k msg)")
+    @DisplayName("Stress Test: Full Pipeline under Bot Attack (5k msg)")
     void testFullPipelineAttack() {
         int botCount = 500;
         int messagesPerBot = 10;
         List<String> attackTraffic = generateMixedTraffic(botCount * messagesPerBot);
         List<Long> latencies = new ArrayList<>(attackTraffic.size());
-
-        long totalStart = System.nanoTime();
 
         for (String msg : attackTraffic) {
             long msgStart = System.nanoTime();
@@ -100,8 +109,6 @@ class BotAttackBenchmarkTest {
             latencies.add(msgEnd - msgStart);
         }
 
-        long totalEnd = System.nanoTime();
-
         Collections.sort(latencies);
         double avgNs = latencies.stream().mapToLong(Long::longValue).average().orElse(0);
         long p95 = latencies.get((int) (latencies.size() * 0.95));
@@ -115,7 +122,7 @@ class BotAttackBenchmarkTest {
         BenchmarkReporter.log("BotPipeline", "max_latency", max, "ns");
 
         if (p99 > 2_000_000) {
-            BenchmarkReporter.alert("BotPipeline", "LAG SPIKE DETECTADO: p99 > 0.5ms");
+            BenchmarkReporter.alert("BotPipeline", "LAG SPIKE DETECTED: p99 > 2ms");
         }
     }
 
@@ -123,12 +130,12 @@ class BotAttackBenchmarkTest {
         List<String> traffic = new ArrayList<>(count);
         Random r = new Random();
         String[] samples = {
-            "Hola a todos",
-            "192.168.1.55 entra ya",
-            "minecraft server barato www.fake.com",
+            "Hello everyone",
+            "192.168.1.55 join now",
+            "minecraft server cheap www.fake.com",
             "spam spam spam spam",
-            "jugador normal hablando",
-            "1.1.1.1 probando ip"
+            "normal player chatting",
+            "1.1.1.1 testing ip"
         };
         for (int i = 0; i < count; i++) {
             traffic.add(samples[r.nextInt(samples.length)]);

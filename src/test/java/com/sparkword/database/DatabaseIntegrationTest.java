@@ -17,8 +17,9 @@
  */
 package com.sparkword.database;
 
-import com.sparkword.storage.SQLiteConnectionPool;
-import com.sparkword.storage.SQLiteMigrations;
+import com.sparkword.core.storage.impl.sql.SQLConnectionFactory;
+import com.sparkword.core.storage.impl.sql.SchemaManager;
+import com.sparkword.core.storage.impl.sql.query.SQLiteQueryAdapter;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.junit.jupiter.api.AfterEach;
@@ -41,10 +42,10 @@ import static org.mockito.Mockito.when;
 class DatabaseIntegrationTest {
 
     private HikariDataSource dataSource;
-    private SQLiteMigrations migrations;
+    private SchemaManager schemaManager;
 
     @Mock
-    private SQLiteConnectionPool connectionPool;
+    private SQLConnectionFactory connectionFactory;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -58,9 +59,9 @@ class DatabaseIntegrationTest {
 
         dataSource = new HikariDataSource(config);
 
-        when(connectionPool.getConnection()).thenAnswer(i -> dataSource.getConnection());
+        when(connectionFactory.getConnection()).thenAnswer(i -> dataSource.getConnection());
 
-        migrations = new SQLiteMigrations(connectionPool, Logger.getGlobal());
+        schemaManager = new SchemaManager(connectionFactory, Logger.getGlobal(), new SQLiteQueryAdapter());
     }
 
     @AfterEach
@@ -71,10 +72,10 @@ class DatabaseIntegrationTest {
     }
 
     @Test
-    @DisplayName("Verificar creación correcta de tablas (Schema Integrity)")
+    @DisplayName("Verify correct table creation (Schema Integrity)")
     void testSchemaCreation() throws Exception {
 
-        migrations.runMigrations();
+        schemaManager.runMigrations();
 
         try (Connection conn = dataSource.getConnection();
              Statement stmt = conn.createStatement()) {
@@ -85,19 +86,19 @@ class DatabaseIntegrationTest {
                 tables.add(rs.getString("name"));
             }
 
-            assertTrue(tables.contains("players"), "Falta la tabla 'players'");
-            assertTrue(tables.contains("muted"), "Falta la tabla 'muted'");
-            assertTrue(tables.contains("warnings"), "Falta la tabla 'warnings'");
-            assertTrue(tables.contains("suggestions"), "Falta la tabla 'suggestions'");
-            assertTrue(tables.contains("audit"), "Falta la tabla 'audit'");
-            assertTrue(tables.contains("monitor_logs"), "Falta la tabla 'monitor_logs'");
+            assertTrue(tables.contains("players"), "Missing table 'players'");
+            assertTrue(tables.contains("muted"), "Missing table 'muted'");
+            assertTrue(tables.contains("warnings"), "Missing table 'warnings'");
+            assertTrue(tables.contains("suggestions"), "Missing table 'suggestions'");
+            assertTrue(tables.contains("audit"), "Missing table 'audit'");
+            assertTrue(tables.contains("monitor_logs"), "Missing table 'monitor_logs'");
 
             ResultSet cols = stmt.executeQuery("PRAGMA table_info(muted)");
             boolean hasExpiresAt = false;
-            while(cols.next()) {
+            while (cols.next()) {
                 if (cols.getString("name").equals("expires_at")) hasExpiresAt = true;
             }
-            assertTrue(hasExpiresAt, "La tabla 'muted' no tiene la columna 'expires_at'");
+            assertTrue(hasExpiresAt, "Table 'muted' is missing column 'expires_at'");
         }
     }
 }

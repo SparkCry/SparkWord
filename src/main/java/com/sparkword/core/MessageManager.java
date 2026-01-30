@@ -19,7 +19,6 @@ package com.sparkword.core;
 
 import com.sparkword.SparkWord;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
@@ -33,27 +32,62 @@ import java.util.*;
 public class MessageManager {
 
     private final SparkWord plugin;
+    private final ConfigManager configManager;
+    private final MiniMessage miniMessage;
     private YamlConfiguration messagesConfig;
     private String prefixString;
 
-    private final MiniMessage miniMessage;
-
-    public MessageManager(SparkWord plugin) {
+    public MessageManager(SparkWord plugin, ConfigManager configManager) {
         this.plugin = plugin;
+        this.configManager = configManager;
         this.miniMessage = MiniMessage.miniMessage();
         reload();
     }
 
     public void reload() {
-        File file = new File(plugin.getDataFolder(), "messages.yml");
-        if (!file.exists()) plugin.saveResource("messages.yml", false);
-        messagesConfig = YamlConfiguration.loadConfiguration(file);
+        String targetLocale = configManager.getGeneralSettings().getLocale();
+        if (targetLocale == null || targetLocale.isEmpty()) targetLocale = "en_US";
+
+        File localeFolder = new File(plugin.getDataFolder(), "locale");
+        if (!localeFolder.exists()) localeFolder.mkdirs();
+
+        File targetFile = new File(localeFolder, targetLocale + ".yml");
+
+        // 1. If file doesn't exist on disk, try to extract it from JAR
+        if (!targetFile.exists()) {
+            if (plugin.getResource("locale/" + targetLocale + ".yml") != null) {
+                plugin.saveResource("locale/" + targetLocale + ".yml", false);
+            } else {
+                plugin.getLogger().warning("Locale file '" + targetLocale + ".yml' not found in JAR or Disk. Falling back to 'en_US.yml'.");
+                targetLocale = "en_US";
+                targetFile = new File(localeFolder, "en_US.yml");
+
+                // Ensure default exists
+                if (!targetFile.exists() && plugin.getResource("locale/en_US.yml") != null) {
+                    plugin.saveResource("locale/en_US.yml", false);
+                }
+            }
+        }
+
+        // 2. Load the configuration
+        if (targetFile.exists()) {
+            messagesConfig = YamlConfiguration.loadConfiguration(targetFile);
+        } else {
+            // Extreme fallback if even en_US.yml failed
+            messagesConfig = new YamlConfiguration();
+            plugin.getLogger().severe("CRITICAL: Could not load any locale file.");
+        }
 
         prefixString = messagesConfig.getString("prefix", "<#09bbf5>[SparkWord] <reset>");
     }
 
     public String getPrefix() {
         return prefixString;
+    }
+
+    public String getString(String key) {
+        if (messagesConfig == null) return key;
+        return messagesConfig.getString(key, key);
     }
 
     public void sendMessage(CommandSender sender, String key) {
@@ -90,6 +124,7 @@ public class MessageManager {
 
         String combined = usePrefix ? (prefixString + rawMsg) : rawMsg;
 
+        // Legacy placeholder support {key}
         for (String k : placeholders.keySet()) {
             combined = combined.replace("{" + k + "}", "<" + k + ">");
         }
@@ -118,6 +153,6 @@ public class MessageManager {
 
         return Component.space()
             .append(Component.text(iconSymbol, NamedTextColor.YELLOW))
-            .hoverEvent(HoverEvent.showText(hoverContent));
+            .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(hoverContent));
     }
 }

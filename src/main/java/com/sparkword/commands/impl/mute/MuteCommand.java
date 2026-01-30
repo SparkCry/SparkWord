@@ -17,12 +17,13 @@
  */
 package com.sparkword.commands.impl.mute;
 
+import com.sparkword.Environment;
 import com.sparkword.commands.SubCommand;
-import com.sparkword.core.Environment;
-import com.sparkword.model.MuteInfo.MuteScope;
+import com.sparkword.core.storage.model.MuteInfo;
+import com.sparkword.util.PaperProfileUtil;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -30,7 +31,10 @@ import java.util.concurrent.CompletableFuture;
 
 public class MuteCommand implements SubCommand {
     private final Environment env;
-    public MuteCommand(Environment env) { this.env = env; }
+
+    public MuteCommand(Environment env) {
+        this.env = env;
+    }
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
@@ -39,40 +43,57 @@ public class MuteCommand implements SubCommand {
             return true;
         }
         if (args.length < 1) {
-            env.getMessageManager().sendMessage(sender, "usage-mute");
+            env.getMessageManager().sendMessage(sender, "help.usage-mute");
             return true;
         }
 
         String playerName = args[0];
-        String reasonRaw = "No reason";
+        String reasonRaw = env.getMessageManager().getString("moderation.default.no-reason");
+
         if (args.length > 1) {
             String maybePreset = args[1];
-            if (env.getPlugin().getConfig().contains("presets." + maybePreset)) {
-                reasonRaw = env.getPlugin().getConfig().getString("presets." + maybePreset);
-                if (args.length > 2) reasonRaw += " " + String.join(" ", Arrays.copyOfRange(args, 2, args.length));
+            String presetValue = env.getConfigManager().getGeneralSettings().getPreset(maybePreset);
+
+            if (presetValue != null) {
+                reasonRaw = presetValue;
+
+                if (args.length > 2) {
+                    reasonRaw += " " + String.join(" ", Arrays.copyOfRange(args, 2, args.length));
+                }
             } else {
                 reasonRaw = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
             }
         }
         final String reason = reasonRaw;
 
-        env.getMessageManager().sendMessage(sender, "defaults.processing");
+        // Try DB lookup first, then fallback to Mojang API
+        env.getStorage().getPlayerIdByNameAsync(playerName).thenCompose(dbId -> {
+            if (dbId != -1) return CompletableFuture.completedFuture(Map.entry(dbId, playerName));
 
-        CompletableFuture.supplyAsync(() -> {
-            @SuppressWarnings("deprecation")
-            OfflinePlayer p = Bukkit.getOfflinePlayer(playerName);
-            return p;
-        }, env.getAsyncExecutor()).thenAcceptAsync(target -> {
-            int cachedId = env.getPlayerDataManager().getPlayerId(target.getUniqueId(), target.getName());
-            int pid = (cachedId != -1) ? cachedId : env.getStorage().getPlayerIdAsync(target.getUniqueId(), playerName).join();
+            return PaperProfileUtil.resolve(playerName).thenCompose(target -> {
+                if (target == null) return CompletableFuture.completedFuture(null);
+                String resolvedName = target.getName() != null ? target.getName() : playerName;
+                return env.getStorage().getPlayerIdAsync(target.getUniqueId(), resolvedName)
+                    .thenApply(id -> Map.entry(id, resolvedName));
+            });
+        }).thenAcceptAsync(entry -> {
+            if (entry == null) {
+                env.getMessageManager().sendMessage(sender, "player-not-found");
+                return;
+            }
+
+            int pid = entry.getKey();
+            String name = entry.getValue();
 
             if (pid != -1) {
-
-                env.getStorage().mute(pid, reason, sender.getName(), 0, "MUTE", MuteScope.CHAT, success -> {
+                env.getStorage().mute(pid, reason, sender.getName(), 0, "MUTE", MuteInfo.MuteScope.CHAT, success -> {
                     Bukkit.getScheduler().runTask(env.getPlugin(), () -> {
-                        env.getMessageManager().sendMessage(sender, "mute-success", Map.of("player", target.getName() != null ? target.getName() : "Unknown", "time", "Permanent (Chat)"));
-                        if (target.isOnline() && target.getPlayer() != null) {
-                            env.getMessageManager().sendMessage(target.getPlayer(), "player-muted", Map.of("staff", sender.getName(), "reason", reason, "time", "Permanent (Chat)"));
+                        String timeText = env.getMessageManager().getString("moderation.default.mute");
+                        env.getMessageManager().sendMessage(sender, "moderation.mute-success", Map.of("player", name, "time", timeText));
+
+                        Player onlineTarget = Bukkit.getPlayerExact(name);
+                        if (onlineTarget != null) {
+                            env.getMessageManager().sendMessage(onlineTarget, "moderation.player-muted", Map.of("staff", sender.getName(), "reason", reason, "time", timeText));
                         }
                     });
                 });

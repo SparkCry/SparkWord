@@ -17,9 +17,9 @@
  */
 package com.sparkword.commands.impl.filter;
 
+import com.sparkword.Environment;
 import com.sparkword.commands.SubCommand;
-import com.sparkword.core.Environment;
-import com.sparkword.filters.word.WordFilterMode;
+import com.sparkword.moderation.filters.word.WordFilterMode;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 
@@ -27,7 +27,10 @@ import java.util.Map;
 
 public class FilterRemoveCommand implements SubCommand {
     private final Environment env;
-    public FilterRemoveCommand(Environment env) { this.env = env; }
+
+    public FilterRemoveCommand(Environment env) {
+        this.env = env;
+    }
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
@@ -37,7 +40,7 @@ public class FilterRemoveCommand implements SubCommand {
         }
 
         if (args.length < 1) {
-            env.getMessageManager().sendMessage(sender, "usage-remove");
+            env.getMessageManager().sendMessage(sender, "help.usage-remove");
             return true;
         }
 
@@ -58,7 +61,7 @@ public class FilterRemoveCommand implements SubCommand {
         }
 
         if (startIndex >= endIndex) {
-            env.getMessageManager().sendMessage(sender, "usage-remove");
+            env.getMessageManager().sendMessage(sender, "help.usage-remove");
             return true;
         }
 
@@ -74,10 +77,10 @@ public class FilterRemoveCommand implements SubCommand {
         env.getFilterManager().getLoader().removeWordAsync(word, mode).thenAccept(success -> {
             Bukkit.getScheduler().runTask(env.getPlugin(), () -> {
                 if (success) {
-                    env.getMessageManager().sendMessage(sender, "word-removed", Map.of("list", listName));
+                    env.getMessageManager().sendMessage(sender, "filter.word-removed", Map.of("list", listName));
                     env.getFilterManager().loadFilters();
                 } else {
-                    env.getMessageManager().sendMessage(sender, "word-not-found");
+                    env.getMessageManager().sendMessage(sender, "filter.word-not-found");
                 }
             });
         });

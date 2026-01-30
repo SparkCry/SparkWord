@@ -17,8 +17,8 @@
  */
 package com.sparkword.commands.impl.suggest;
 
+import com.sparkword.Environment;
 import com.sparkword.commands.SubCommand;
-import com.sparkword.core.Environment;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
@@ -58,7 +58,7 @@ public class SuggestCommand implements SubCommand {
         }
 
         if (args.length < 2) {
-            env.getMessageManager().sendMessage(p, "suggest-usage");
+            env.getMessageManager().sendMessage(p, "help.suggest-usage");
             return true;
         }
 
@@ -69,25 +69,25 @@ public class SuggestCommand implements SubCommand {
             long cd = env.getConfigManager().getSuggestionCooldown() * 1000L;
 
             if (diff < cd) {
-                env.getMessageManager().sendMessage(p, "error-cooldown", Map.of("time", String.valueOf((cd - diff)/1000)));
+                env.getMessageManager().sendMessage(p, "suggestions.suggest-cooldown", Map.of("time", String.valueOf((cd - diff) / 1000)));
                 return true;
             }
         }
 
         String word = args[0];
         StringBuilder sb = new StringBuilder();
-        for(int i=1; i<args.length; i++) sb.append(args[i]).append(" ");
+        for (int i = 1; i < args.length; i++) sb.append(args[i]).append(" ");
         String reason = sb.toString().trim();
 
         int maxWord = env.getConfigManager().getSuggestionMaxWord();
         int maxReason = env.getConfigManager().getSuggestionMaxReason();
 
         if (word.length() > maxWord) {
-            env.getMessageManager().sendMessage(p, "error-word-too-long", Map.of("limit", String.valueOf(maxWord)));
+            env.getMessageManager().sendMessage(p, "suggestions.long-suggestion", Map.of("limit", String.valueOf(maxWord)));
             return true;
         }
         if (reason.length() > maxReason) {
-            env.getMessageManager().sendMessage(p, "error-reason-too-long", Map.of("limit", String.valueOf(maxReason)));
+            env.getMessageManager().sendMessage(p, "suggestion.second-long-suggestion", Map.of("limit", String.valueOf(maxReason)));
             return true;
         }
 
@@ -99,10 +99,10 @@ public class SuggestCommand implements SubCommand {
                         if (!p.hasPermission("sparkword.bypass.cooldown")) {
                             cooldowns.put(uuid, System.currentTimeMillis());
                         }
-                        env.getMessageManager().sendMessage(p, "suggest-success");
+                        env.getMessageManager().sendMessage(p, "suggestions.suggest-success");
                         env.getNotifyManager().notifySuggestion(p, word, reason);
                     } else {
-                        env.getMessageManager().sendMessage(p, "suggest-exists");
+                        env.getMessageManager().sendMessage(p, "suggestions.suggest-exists");
                     }
                 });
             });

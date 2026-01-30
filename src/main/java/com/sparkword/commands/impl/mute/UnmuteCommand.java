@@ -17,10 +17,10 @@
  */
 package com.sparkword.commands.impl.mute;
 
+import com.sparkword.Environment;
 import com.sparkword.commands.SubCommand;
-import com.sparkword.core.Environment;
+import com.sparkword.util.PaperProfileUtil;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
 import java.util.Arrays;
@@ -29,7 +29,10 @@ import java.util.concurrent.CompletableFuture;
 
 public class UnmuteCommand implements SubCommand {
     private final Environment env;
-    public UnmuteCommand(Environment env) { this.env = env; }
+
+    public UnmuteCommand(Environment env) {
+        this.env = env;
+    }
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
@@ -38,7 +41,7 @@ public class UnmuteCommand implements SubCommand {
             return true;
         }
         if (args.length < 1) {
-            env.getMessageManager().sendMessage(sender, "usage-unmute");
+            env.getMessageManager().sendMessage(sender, "help.usage-unmute");
             return true;
         }
 
@@ -49,17 +52,20 @@ public class UnmuteCommand implements SubCommand {
         final String fReason = reason;
         final String targetName = args[0];
 
-        CompletableFuture.supplyAsync(() -> {
-            @SuppressWarnings("deprecation")
-            OfflinePlayer target = Bukkit.getOfflinePlayer(targetName);
-            return target;
-        }, env.getAsyncExecutor()).thenCompose(target ->
-            env.getStorage().getPlayerIdAsync(target.getUniqueId(), target.getName() != null ? target.getName() : targetName)
-        ).thenAccept(id -> {
-            if (id != -1) {
-                env.getStorage().unmute(id, sender.getName(), fReason).thenRun(() -> {
+        env.getStorage().getPlayerIdByNameAsync(targetName).thenCompose(dbId -> {
+            if (dbId != -1) return CompletableFuture.completedFuture(Map.entry(dbId, targetName));
+
+            return PaperProfileUtil.resolve(targetName).thenCompose(target -> {
+                if (target == null) return CompletableFuture.completedFuture(null);
+                String resolvedName = target.getName() != null ? target.getName() : targetName;
+                return env.getStorage().getPlayerIdAsync(target.getUniqueId(), resolvedName)
+                    .thenApply(id -> Map.entry(id, resolvedName));
+            });
+        }).thenAccept(entry -> {
+            if (entry != null && entry.getKey() != -1) {
+                env.getStorage().unmute(entry.getKey(), sender.getName(), fReason).thenRun(() -> {
                     Bukkit.getScheduler().runTask(env.getPlugin(), () ->
-                        env.getMessageManager().sendMessage(sender, "unmute-success", Map.of("player", targetName))
+                        env.getMessageManager().sendMessage(sender, "moderation.unmute-success", Map.of("player", entry.getValue()))
                     );
                 });
             } else {
@@ -68,6 +74,7 @@ public class UnmuteCommand implements SubCommand {
                 );
             }
         });
+
         return true;
     }
 }

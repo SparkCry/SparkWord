@@ -17,9 +17,9 @@
  */
 package com.sparkword.commands.impl.logs;
 
+import com.sparkword.Environment;
 import com.sparkword.commands.SubCommand;
-import com.sparkword.core.Environment;
-import com.sparkword.model.LogEntry;
+import com.sparkword.core.storage.model.LogEntry;
 import com.sparkword.util.TimeUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -28,14 +28,15 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 public class LogsCommand implements SubCommand {
     private final Environment env;
 
-    public LogsCommand(Environment env) { this.env = env; }
+    public LogsCommand(Environment env) {
+        this.env = env;
+    }
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
@@ -47,7 +48,10 @@ public class LogsCommand implements SubCommand {
         String type = (args.length > 0) ? args[0].toLowerCase() : "b";
         int page = 1;
         if (args.length > 1) {
-            try { page = Integer.parseInt(args[1]); } catch(Exception ignored){}
+            try {
+                page = Integer.parseInt(args[1]);
+            } catch (Exception ignored) {
+            }
         }
 
         final int fPage = page;
@@ -99,8 +103,9 @@ public class LogsCommand implements SubCommand {
         if (content == null) return Component.text("No content");
 
         if (source.contains("book")) {
-            Component bookTitle = env.getMessageManager().getComponent("logs.viewer.hover-source-book");
-            Component contentTitle = env.getMessageManager().getComponent("logs.viewer.hover-content-book");
+            // Passing false to avoid prefix in title
+            Component bookTitle = env.getMessageManager().getComponent("logs.viewer.hover-source-book", null, false);
+            Component contentTitle = env.getMessageManager().getComponent("logs.viewer.hover-content-book", null, false);
             Component censorTitle = env.getMessageManager().getComponent("logs.viewer.hover-censor-book", Map.of("detected", detected != null ? detected : "?"), false);
 
             return bookTitle
@@ -115,7 +120,8 @@ public class LogsCommand implements SubCommand {
         if (source.contains("chat") || violation.contains("flood")) {
             if (violation.contains("flood")) {
                 String[] msgs = content.split(Pattern.quote(" | "));
-                Component floodTitle = env.getMessageManager().getComponent("logs.viewer.hover-flood");
+                // Passing false to avoid prefix in title
+                Component floodTitle = env.getMessageManager().getComponent("logs.viewer.hover-flood", null, false);
                 Component floodHover = floodTitle;
                 for (String msg : msgs) {
                     floodHover = floodHover.append(Component.newline()).append(Component.text("- " + msg, NamedTextColor.GRAY));
@@ -152,7 +158,7 @@ public class LogsCommand implements SubCommand {
         String[] words = content.split("\\s+");
         int targetIndex = -1;
 
-        for(int i=0; i<words.length; i++) {
+        for (int i = 0; i < words.length; i++) {
             if (words[i].toLowerCase().contains(lowerDetected)) {
                 targetIndex = i;
                 break;

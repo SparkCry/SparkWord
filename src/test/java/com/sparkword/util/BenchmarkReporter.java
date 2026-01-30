@@ -40,10 +40,10 @@ public class BenchmarkReporter {
     }
 
     public static void log(String category, String key, Object value, String unit) {
-        System.out.println(String.format("[METRIC] %s | %s | %s | %s", category, key, value, unit));
+        System.out.printf("[METRIC] %s | %s | %s | %s%n", category, key, value, unit);
 
         metricsStore.computeIfAbsent(category, k -> new ConcurrentHashMap<>())
-                .put(key, new MetricEntry(value, unit));
+            .put(key, new MetricEntry(value, unit));
     }
 
     public static void alert(String category, String message) {
@@ -87,9 +87,9 @@ public class BenchmarkReporter {
             json.append("]}");
 
             writer.write(json.toString());
-            System.out.println("[BenchmarkReporter] Métricas exportadas a: " + path);
+            System.out.println("[BenchmarkReporter] Metrics exported to: " + path);
         } catch (IOException e) {
-            System.err.println("[BenchmarkReporter] Error escribiendo JSON: " + e.getMessage());
+            System.err.println("[BenchmarkReporter] Error writing JSON: " + e.getMessage());
         }
     }
 
@@ -99,8 +99,12 @@ public class BenchmarkReporter {
     }
 
     private static class MetricEntry {
-        Object value; String unit;
-        MetricEntry(Object value, String unit) { this.value = value; this.unit = unit; }
-    }
+        Object value;
+        String unit;
 
+        MetricEntry(Object value, String unit) {
+            this.value = value;
+            this.unit = unit;
+        }
+    }
 }

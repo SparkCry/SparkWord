@@ -17,8 +17,8 @@
  */
 package com.sparkword.commands.impl.root;
 
+import com.sparkword.Environment;
 import com.sparkword.commands.SubCommand;
-import com.sparkword.core.Environment;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 

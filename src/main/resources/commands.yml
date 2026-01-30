@@ -1,3 +1,6 @@
+# ==============================================================================
+#  SparkWord Alias-Commands v1.1.0
+# ==============================================================================
 commands:
   alias:
     sw-sg:
@@ -9,6 +12,8 @@ commands:
     sw-unmute:
       - "unmute"
       - "allowchat"
+    sw-permute:
+      - "gmute"
     sw-tempmute:
       - "tempmute"
       - "tmute"

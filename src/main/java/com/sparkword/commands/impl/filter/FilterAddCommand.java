@@ -17,9 +17,9 @@
  */
 package com.sparkword.commands.impl.filter;
 
+import com.sparkword.Environment;
 import com.sparkword.commands.SubCommand;
-import com.sparkword.core.Environment;
-import com.sparkword.filters.word.WordFilterMode;
+import com.sparkword.moderation.filters.word.WordFilterMode;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 
@@ -27,7 +27,10 @@ import java.util.Map;
 
 public class FilterAddCommand implements SubCommand {
     private final Environment env;
-    public FilterAddCommand(Environment env) { this.env = env; }
+
+    public FilterAddCommand(Environment env) {
+        this.env = env;
+    }
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
@@ -37,7 +40,7 @@ public class FilterAddCommand implements SubCommand {
         }
 
         if (args.length < 2) {
-            env.getMessageManager().sendMessage(sender, "usage-add");
+            env.getMessageManager().sendMessage(sender, "help.usage-add");
             return true;
         }
 
@@ -64,7 +67,7 @@ public class FilterAddCommand implements SubCommand {
         String word = sb.toString().trim();
 
         if (word.isEmpty()) {
-            env.getMessageManager().sendMessage(sender, "usage-add");
+            env.getMessageManager().sendMessage(sender, "help.usage-add");
             return true;
         }
 
@@ -74,7 +77,7 @@ public class FilterAddCommand implements SubCommand {
         env.getFilterManager().addWordHotSwap(word, mode).thenAccept(success -> {
             Bukkit.getScheduler().runTask(env.getPlugin(), () -> {
                 if (success) {
-                    env.getMessageManager().sendMessage(sender, "word-added", Map.of("list", listName));
+                    env.getMessageManager().sendMessage(sender, "filter.word-added", Map.of("list", listName));
 
                 } else {
                     env.getMessageManager().sendMessage(sender, "filter.exists");

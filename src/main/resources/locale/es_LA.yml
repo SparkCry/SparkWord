@@ -1,0 +1,184 @@
+# ==============================================================================
+# SPARKWORD MENSAJES v1.0.1
+# ==============================================================================
+prefix: "[<reset><gradient:#09bbf5:#FFFFFF>SparkWord</gradient><white>] "
+  
+# ==============================================================================
+# GENÉRICO
+# ==============================================================================
+reload: "Configuración y mensajes recargados."
+no-permission: "<red>No tienes permiso para ejecutar este comando."
+player-not-found: "<red>Jugador no encontrado o desconectado."
+error-player-only: "<red>Este comando es solo para jugadores."
+error-register-player: "<red>No se pudieron registrar o encontrar los datos del jugador."
+error-command-length: "<red>Comando demasiado largo. Por favor, acorta tu mensaje."
+error-db-error: "<red>Ocurrió un error en la base de datos."
+error-invalid-page: "<red>Número de página inválido."
+error-invalid-time: "<red>Formato de duración inválido (ej. 1d, 12h, 30m)."
+error-invalid-days: "<red>Recuento de días inválido."
+error-negative: "<red>Los días no pueden ser negativos."
+error-invalid-id: "<red>ID proporcionada inválida."
+error-id-not-found: "<red>Entrada con esa ID no encontrada."
+
+# ==============================================================================
+# DESCRIPCIONES DE AYUDA DE COMANDOS
+# ==============================================================================
+help:
+  info: "/sw info <gray>[página] <white>- Información del plugin"
+  debug: "/sw-debug <gray>[filtro] <white>- Alternar modos de depuración"
+  reload: "/sw reload <white>- Recargar configuración"
+  purge: "/sw purge <gray><tipo> <días> <white>- Purgar registros de la base de datos"
+  logs: "/sw logs <gray>[tipo] [página] <white>- Ver registros de violaciones"
+  audit: "/sw audit <gray>[jugador] <white>- Ver registros de auditoría del staff"
+  accept: "/sw accept <gray><id> <lista> <white>- Aceptar sugerencia"
+  deny: "/sw deny <gray><id> <white>- Denegar sugerencia"
+  add: "/sw add <gray><lista> <palabra> <white>- Añadir palabra al filtro"
+  remove: "/sw remove <gray><lista> <palabra> <white>- Eliminar palabra del filtro"
+  list: "/sw list <gray>[tipo] <white>- Listar filtros (n, s, wc, sg)"
+  mute: "/sw-mute <gray><jugador> [razón] <white>- Silenciar permanentemente"
+  permute: "/sw-permute <gray><jugador> [razón] <white>- Silenciar perm (Bloqueo Total)"
+  tempmute: "/sw-tempmute <gray><jugador> <tiempo> [razón] <white>- Silenciar temporalmente"
+  unmute: "/sw-unmute <gray><jugador> <white>- Quitar silencio a un jugador"
+  warn: "/sw-warn <gray><jugador> <razón> <white>- Advertir a un jugador"
+  checkmute: "/sw-checkmute <gray><jugador> <white>- Verificar silencios activos"
+  scan: "/sw-scan <gray><jugador> [página] <white>- Ver historial del jugador"
+  suggest: "/sw-sg <gray><palabra> [razón] <white>- Sugerir un filtro de palabra"
+  footer-next: "Escribe /sw info {page} para más."
+  
+# ==============================================================================
+# USO DE COMANDOS
+# ==============================================================================
+  usage-purge: "<red>Uso: /sw purge <sg|b|a|all> <días>"
+  usage-accept: "<red>Uso: /sw accept <id> <n|s|wc>"
+  usage-deny: "<red>Uso: /sw deny <id>"
+  usage-add: "<red>Uso: /sw add <n|s|wc> <palabra>"
+  usage-remove: "<red>Uso: /sw remove <n|s|wc> <palabra>"
+  usage-list: "<red>Uso: /sw list <n|s|wc|sg> [página]"
+  usage-mute: "<red>Uso: /sw-mute <jugador> [razón]"  
+  usage-permute: "<red>Uso: /sw-permute <jugador> [razón]"
+  usage-tempmute: "<red>Uso: /sw-tempmute <jugador> <tiempo> [razón]"
+  usage-unmute: "<red>Uso: /sw-unmute <jugador>"
+  usage-warn: "<red>Uso: /sw-warn <jugador> <razón>"
+  usage-checkmute: "<red>Uso: /sw-checkmute <jugador>"
+  usage-scan: "<red>Uso: /sw-scan <jugador> [página]"
+  suggest-usage: "<red>Uso: /sw-sg <palabra> <razón>"
+
+# ==============================================================================
+# FILTRO Y LISTAS
+# ==============================================================================
+filter:
+  exists: "<red>Esa palabra ya existe en la lista."
+  word-added: "Palabra añadida a la lista <gray>{list}<white>."
+  word-removed: "Palabra eliminada de la lista <gray>{list}<white>."
+  word-not-found: "<red>Palabra no encontrada en la lista especificada."
+  list-empty: "<gray>Esta lista está vacía."
+
+# ==============================================================================
+# MODERACIÓN
+# ==============================================================================
+moderation:
+  mute-success: "Silencio aplicado a <gray>{player} <#09bbf5>| <white>duración: {time}"
+  unmute-success: "El jugador ha dejado de estar silenciado. <gray>{player}<white>."
+  check-mute-true: "<red>{player} está silenciado por {time}."
+  check-mute-false: "{player} no está silenciado."
+  player-muted: "<gray>{staff} <red>te ha silenciado por <gray>{time}<red>. Razón: <white>{reason}"
+  player-permuted: "<red>No puedes interactuar con esto mientras estás silenciado globalmente."
+  warn-sent: "Se advirtió a <gray>{player}<white>."
+  warn-receive: "<red>ADVERTENCIA RECIBIDA <white>Staff: <gray>{staff} <white>Razón: <gray>{reason}"
+  action-purge-start: "<gray>Iniciando tarea de purga..."
+  action-purge-complete: "Purga completa. Se eliminaron <gray>{count} <white>entradas."
+  scan-empty: "<gray>No se encontraron violaciones recientes."
+  default:
+    mute: "permanentemente"
+    temp: "temporalmente"
+    perm: "globalmente"
+    no-reason: "Sin razón"
+  
+# ==============================================================================
+# REGISTROS Y AUDITORÍA
+# ==============================================================================
+logs:
+  viewer:
+    no-records: "<gray>No se encontraron registros."
+    hover-source-book: "<gray>Fuente: <white>Libro"
+    hover-content-book: "<gray>Contenido del Libro:"
+    hover-censor-book: "<red>Detectado: {detected}"
+    hover-flood: "<#09bbf5>Historial de Flood:"
+
+audit:
+  hover-reason: "<gray> [Razón]"
+  format:
+    base: "<gray>[{date}] <#09bbf5>{staff}<gray>: "
+    actions:
+      mute: "<red>SILENCIAR <gray>{player}"
+      permute: "<dark_red>SILENCIO_PERM <gray>{player}"
+      tempmute: "<red>SILENCIO_TEMP <gray>{player}"
+      unmute: "QUITAR_SILENCIO <gray>{player}"
+      warn: "ADVERTIR <gray>{player}"
+      purge: "<gray>PURGAR <white>Tipo: {type} | Días: {days}"
+      accept: "ACEPTAR <gray>{word} ({list})"
+      deny: "<red>DENEGAR <gray>{word}"
+      api-mute: "<red>API_MUTE <gray>{player}"
+      default: "{action} <gray>- {detail}"
+
+# ==============================================================================
+# SUGERENCIAS
+# ==============================================================================
+suggestions:
+  disabled: "<red>Las sugerencias están actualmente deshabilitadas."
+  pending-suggestion: "Sugerencias Pendientes"
+  suggest-success: "Sugerencia enviada al staff. ¡Gracias!"
+  suggest-exists: "<red>Esa palabra ya está pendiente de sugerencia."
+  action-suggest-accepted: "Sugerencia aceptada para la palabra: <gray>{word}"
+  action-suggest-rejected: "<gray>Sugerencia rechazada."
+  suggest-accept: "Tu sugerencia para <gray>{word} <white>fue aceptada por <gray>{staff}<white>."
+  suggest-deny: "<red>Tu sugerencia para <gray>{word} <red>fue denegada por <gray>{staff}<red>."
+  suggest-cooldown: "<red>Por favor espera {time}s antes de sugerir de nuevo."
+  first-long-suggestion: "<red>La palabra excede el límite de {limit} caracteres."
+  second-long-suggestion: "<red>La razón excede el límite de {limit} caracteres."
+
+# ==============================================================================
+# PREVENCIÓN Y NOTIFICACIONES
+# ==============================================================================
+book:
+  limit-open: "<red>Por favor espera {time}s antes de abrir libros de nuevo."
+  limit-pages: "<red>El libro contiene demasiadas páginas."
+  limit-complexity: "<red>El contenido del libro es demasiado complejo."
+  evidence-title: "<red>Evidencia: <white>{player}"
+  author-name: "<#09bbf5>Sistema SparkWord"
+
+spam:
+  chars: "<red>Por favor, no hagas spam de caracteres."
+  repeat: "<red>Por favor, no repitas mensajes."
+  flood: "<red>Por favor, baja la velocidad."
+  digits: "<red>Demasiados números en el mensaje."
+  ip: "<red>No se permite publicidad."
+  ip-split: "<red>Patrón sospechoso detectado."
+  injection: "<red>Sintaxis ilegal detectada."
+  caps: "<red>Por favor, no abuses de las MAYÚSCULAS."
+  evasion: "Evasión Detectada"
+  
+notification:
+  staff-suggest: "[<yellow>Sugerir<white>] <gray>{player} <white>-> <gray>{suggest} <white>({reason})"
+  blocked: "<red>Mensaje bloqueado: {reason}"
+  alert: "[<red>ALERTA<white>] <gray>{player} "
+  icon-symbol: "⚠"
+  spy-hover:
+    matches: "<red>Coincidencias: <white>{matches}"
+    original: "<gray>Original: <white>{original}"
+  details:
+    title: "<#09bbf5>Detalles de Violación"
+    type: "<gray>Tipo: <white>{type}"
+    source: "<gray>Fuente: <white>{source}"
+    detected: "<gray>Detectado: <red>{detected}"
+    evidence-click: "Aquí está la evidencia (Clic)"
+    evidence-error: "<red>Error: La evidencia expiró."
+
+# ==============================================================================
+# DEBUG
+# ==============================================================================
+debug:
+  general-enabled: "Debug general habilitado"
+  general-disabled: "Debug general deshabilitado"
+  filter-enabled: "Debug de filtro habilitado"
+  filter-disabled: "Debug de filtro deshabilitado."

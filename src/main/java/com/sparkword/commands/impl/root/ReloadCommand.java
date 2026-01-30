@@ -17,13 +17,16 @@
  */
 package com.sparkword.commands.impl.root;
 
+import com.sparkword.Environment;
 import com.sparkword.commands.SubCommand;
-import com.sparkword.core.Environment;
 import org.bukkit.command.CommandSender;
 
 public class ReloadCommand implements SubCommand {
     private final Environment env;
-    public ReloadCommand(Environment env) { this.env = env; }
+
+    public ReloadCommand(Environment env) {
+        this.env = env;
+    }
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {

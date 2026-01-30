@@ -33,7 +33,7 @@ import static org.mockito.Mockito.mock;
 class DebugThreadSafetyTest {
 
     @Test
-    @DisplayName("Concurrencia: Toggle de Debug Flag bajo carga")
+    @DisplayName("Concurrency: Debug Flag Toggle under Load")
     void testDebugFlagThreadSafety() throws InterruptedException {
 
         SparkWord plugin = mock(SparkWord.class);
@@ -49,7 +49,10 @@ class DebugThreadSafetyTest {
         service.submit(() -> {
             for (int i = 0; i < iterations; i++) {
                 container.setDebugMode(i % 2 == 0);
-                try { Thread.sleep(1); } catch (InterruptedException e) {}
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {
+                }
             }
         });
 
@@ -68,9 +71,9 @@ class DebugThreadSafetyTest {
         service.shutdownNow();
 
         container.setDebugMode(false);
-        assertEquals(false, container.isDebugMode(), "El estado final de debugMode debería ser false");
+        assertEquals(false, container.isDebugMode(), "Final debugMode state should be false");
 
-        System.out.println("Lecturas 'true' durante el caos: " + trueReads.get());
+        System.out.println("'True' reads during chaos: " + trueReads.get());
     }
 
     static class TestableDebugContainer {

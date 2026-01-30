@@ -17,18 +17,22 @@
  */
 package com.sparkword.commands.impl.mute;
 
+import com.sparkword.Environment;
 import com.sparkword.commands.SubCommand;
-import com.sparkword.core.Environment;
+import com.sparkword.util.PaperProfileUtil;
 import com.sparkword.util.TimeUtil;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 public class CheckMuteCommand implements SubCommand {
     private final Environment env;
-    public CheckMuteCommand(Environment env) { this.env = env; }
+
+    public CheckMuteCommand(Environment env) {
+        this.env = env;
+    }
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
@@ -37,20 +41,39 @@ public class CheckMuteCommand implements SubCommand {
             return true;
         }
         if (args.length < 1) {
-            env.getMessageManager().sendMessage(sender, "usage-checkmute");
+            env.getMessageManager().sendMessage(sender, "help.usage-checkmute");
             return true;
         }
 
-        @SuppressWarnings("deprecation")
-        OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
-        int cachedId = env.getPlayerDataManager().getPlayerId(target.getUniqueId(), target.getName());
+        String targetName = args[0];
 
-        if (cachedId != -1) {
-            check(sender, args[0], cachedId);
-        } else {
-            env.getStorage().getPlayerIdAsync(target.getUniqueId(), target.getName() != null ? target.getName() : args[0])
-                .thenAccept(id -> check(sender, args[0], id));
+        org.bukkit.entity.Player online = Bukkit.getPlayer(targetName);
+        if (online != null) {
+            int cachedId = env.getPlayerDataManager().getPlayerId(online.getUniqueId(), online.getName());
+            if (cachedId != -1) {
+                check(sender, online.getName(), cachedId);
+                return true;
+            }
         }
+
+        env.getStorage().getPlayerIdByNameAsync(targetName).thenCompose(dbId -> {
+            if (dbId != -1) return CompletableFuture.completedFuture(Map.entry(dbId, targetName));
+
+            return PaperProfileUtil.resolve(targetName).thenCompose(target -> {
+                if (target == null) return CompletableFuture.completedFuture(null);
+                String resolvedName = target.getName() != null ? target.getName() : targetName;
+                return env.getStorage().getPlayerIdAsync(target.getUniqueId(), resolvedName)
+                    .thenApply(id -> Map.entry(id, resolvedName));
+            });
+        }).thenAccept(entry -> {
+            if (entry == null || entry.getKey() == -1) {
+                Bukkit.getScheduler().runTask(env.getPlugin(), () ->
+                    env.getMessageManager().sendMessage(sender, "player-not-found"));
+                return;
+            }
+            check(sender, entry.getValue(), entry.getKey());
+        });
+
         return true;
     }
 
@@ -59,10 +82,10 @@ public class CheckMuteCommand implements SubCommand {
             boolean m = exp != -1 && (exp == 0 || exp > System.currentTimeMillis());
             Bukkit.getScheduler().runTask(env.getPlugin(), () -> {
                 if (m) {
-                    String time = exp==0 ? "Perm" : TimeUtil.formatDuration((exp-System.currentTimeMillis())/1000);
-                    env.getMessageManager().sendMessage(sender, "check-mute-true", Map.of("player", name, "time", time));
+                    String time = exp == 0 ? "Perm" : TimeUtil.formatDuration((exp - System.currentTimeMillis()) / 1000);
+                    env.getMessageManager().sendMessage(sender, "moderation.check-mute-true", Map.of("player", name, "time", time));
                 } else {
-                    env.getMessageManager().sendMessage(sender, "check-mute-false", Map.of("player", name));
+                    env.getMessageManager().sendMessage(sender, "moderation.check-mute-false", Map.of("player", name));
                 }
             });
         });

@@ -1,0 +1,184 @@
+# ==============================================================================
+# SPARKWORD NACHRICHTEN v1.0.1
+# ==============================================================================
+prefix: "[<reset><gradient:#09bbf5:#FFFFFF>SparkWord</gradient><white>] "
+  
+# ==============================================================================
+# ALLGEMEIN
+# ==============================================================================
+reload: "Konfiguration und Nachrichten neu geladen."
+no-permission: "<red>Du hast keine Berechtigung, diesen Befehl auszuführen."
+player-not-found: "<red>Spieler nicht gefunden oder offline."
+error-player-only: "<red>Dieser Befehl ist nur für Spieler."
+error-register-player: "<red>Konnte Spielerdaten nicht registrieren oder finden."
+error-command-length: "<red>Befehl zu lang. Bitte kürze deine Nachricht."
+error-db-error: "<red>Ein Datenbankfehler ist aufgetreten."
+error-invalid-page: "<red>Ungültige Seitennummer."
+error-invalid-time: "<red>Ungültiges Zeitformat (z.B. 1d, 12h, 30m)."
+error-invalid-days: "<red>Ungültige Anzahl an Tagen."
+error-negative: "<red>Tage können nicht negativ sein."
+error-invalid-id: "<red>Ungültige ID angegeben."
+error-id-not-found: "<red>Eintrag mit dieser ID nicht gefunden."
+
+# ==============================================================================
+# BEFEHLS-HILFE BESCHREIBUNGEN
+# ==============================================================================
+help:
+  info: "/sw info <gray>[Seite] <white>- Plugin-Informationen"
+  debug: "/sw-debug <gray>[Filter] <white>- Debug-Modi umschalten"
+  reload: "/sw reload <white>- Konfiguration neu laden"
+  purge: "/sw purge <gray><Typ> <Tage> <white>- Datenbankeinträge bereinigen"
+  logs: "/sw logs <gray>[Typ] [Seite] <white>- Verstoßprotokolle ansehen"
+  audit: "/sw audit <gray>[Spieler] <white>- Staff-Audit-Logs ansehen"
+  accept: "/sw accept <gray><ID> <Liste> <white>- Vorschlag akzeptieren"
+  deny: "/sw deny <gray><ID> <white>- Vorschlag ablehnen"
+  add: "/sw add <gray><Liste> <Wort> <white>- Wort zum Filter hinzufügen"
+  remove: "/sw remove <gray><Liste> <Wort> <white>- Wort aus Filter entfernen"
+  list: "/sw list <gray>[Typ] <white>- Filter auflisten (n, s, wc, sg)"
+  mute: "/sw-mute <gray><Spieler> [Grund] <white>- Permanent stummschalten"
+  permute: "/sw-permute <gray><Spieler> [Grund] <white>- Perm stummschalten (Totalblockade)"
+  tempmute: "/sw-tempmute <gray><Spieler> <Zeit> [Grund] <white>- Temporär stummschalten"
+  unmute: "/sw-unmute <gray><Spieler> <white>- Stummschaltung aufheben"
+  warn: "/sw-warn <gray><Spieler> <Grund> <white>- Spieler verwarnen"
+  checkmute: "/sw-checkmute <gray><Spieler> <white>- Aktive Stummschaltungen prüfen"
+  scan: "/sw-scan <gray><Spieler> [Seite] <white>- Spielerverlauf ansehen"
+  suggest: "/sw-sg <gray><Wort> [Grund] <white>- Wortfilter vorschlagen"
+  footer-next: "Tippe /sw info {page} für mehr."
+  
+# ==============================================================================
+# BEFEHL VERWENDUNG
+# ==============================================================================
+  usage-purge: "<red>Verwendung: /sw purge <sg|b|a|all> <Tage>"
+  usage-accept: "<red>Verwendung: /sw accept <ID> <n|s|wc>"
+  usage-deny: "<red>Verwendung: /sw deny <ID>"
+  usage-add: "<red>Verwendung: /sw add <n|s|wc> <Wort>"
+  usage-remove: "<red>Verwendung: /sw remove <n|s|wc> <Wort>"
+  usage-list: "<red>Verwendung: /sw list <n|s|wc|sg> [Seite]"
+  usage-mute: "<red>Verwendung: /sw-mute <Spieler> [Grund]"  
+  usage-permute: "<red>Verwendung: /sw-permute <Spieler> [Grund]"
+  usage-tempmute: "<red>Verwendung: /sw-tempmute <Spieler> <Zeit> [Grund]"
+  usage-unmute: "<red>Verwendung: /sw-unmute <Spieler>"
+  usage-warn: "<red>Verwendung: /sw-warn <Spieler> <Grund>"
+  usage-checkmute: "<red>Verwendung: /sw-checkmute <Spieler>"
+  usage-scan: "<red>Verwendung: /sw-scan <Spieler> [Seite]"
+  suggest-usage: "<red>Verwendung: /sw-sg <Wort> <Grund>"
+
+# ==============================================================================
+# FILTER & LISTEN
+# ==============================================================================
+filter:
+  exists: "<red>Dieses Wort existiert bereits in der Liste."
+  word-added: "Wort zur Liste <gray>{list}<white> hinzugefügt."
+  word-removed: "Wort aus Liste <gray>{list}<white> entfernt."
+  word-not-found: "<red>Wort nicht in der angegebenen Liste gefunden."
+  list-empty: "<gray>Diese Liste ist leer."
+
+# ==============================================================================
+# MODERATION
+# ==============================================================================
+moderation:
+  mute-success: "Stummschaltung angewendet auf <gray>{player} <#09bbf5>| <white>Dauer: {time}"
+  unmute-success: "Die Stummschaltung des Spielers wurde aufgehoben. <gray>{player}<white>."
+  check-mute-true: "<red>{player} ist für {time} stummgeschaltet."
+  check-mute-false: "{player} ist nicht stummgeschaltet."
+  player-muted: "<gray>{staff} <red>hat dich für <gray>{time} <red>stummgeschaltet. Grund: <white>{reason}"
+  player-permuted: "<red>Du kannst hiermit nicht interagieren, solange du global stummgeschaltet bist."
+  warn-sent: "<gray>{player}<white> verwarnt."
+  warn-receive: "<red>WARNUNG ERHALTEN <white>Staff: <gray>{staff} <white>Grund: <gray>{reason}"
+  action-purge-start: "<gray>Starte Bereinigungsaufgabe..."
+  action-purge-complete: "Bereinigung abgeschlossen. <gray>{count} <white>Einträge gelöscht."
+  scan-empty: "<gray>Keine kürzlichen Verstöße gefunden."
+  default:
+    mute: "permanent"
+    temp: "temporär"
+    perm: "global"
+    no-reason: "Kein Grund"
+  
+# ==============================================================================
+# LOGS & AUDIT
+# ==============================================================================
+logs:
+  viewer:
+    no-records: "<gray>Keine Einträge gefunden."
+    hover-source-book: "<gray>Quelle: <white>Buch"
+    hover-content-book: "<gray>Buchinhalt:"
+    hover-censor-book: "<red>Erkannt: {detected}"
+    hover-flood: "<#09bbf5>Flood-Verlauf:"
+
+audit:
+  hover-reason: "<gray> [Grund]"
+  format:
+    base: "<gray>[{date}] <#09bbf5>{staff}<gray>: "
+    actions:
+      mute: "<red>MUTE <gray>{player}"
+      permute: "<dark_red>PERMUTE <gray>{player}"
+      tempmute: "<red>TEMPMUTE <gray>{player}"
+      unmute: "UNMUTE <gray>{player}"
+      warn: "WARN <gray>{player}"
+      purge: "<gray>BEREINIGEN <white>Typ: {type} | Tage: {days}"
+      accept: "AKZEPTIEREN <gray>{word} ({list})"
+      deny: "<red>ABLEHNEN <gray>{word}"
+      api-mute: "<red>API_MUTE <gray>{player}"
+      default: "{action} <gray>- {detail}"
+
+# ==============================================================================
+# VORSCHLÄGE
+# ==============================================================================
+suggestions:
+  disabled: "<red>Vorschläge sind derzeit deaktiviert."
+  pending-suggestion: "Ausstehende Vorschläge"
+  suggest-success: "Vorschlag an das Team gesendet. Danke!"
+  suggest-exists: "<red>Dieses Wort ist bereits als Vorschlag ausstehend."
+  action-suggest-accepted: "Vorschlag akzeptiert für Wort: <gray>{word}"
+  action-suggest-rejected: "<gray>Vorschlag abgelehnt."
+  suggest-accept: "Dein Vorschlag für <gray>{word} <white>wurde von <gray>{staff}<white> akzeptiert."
+  suggest-deny: "<red>Dein Vorschlag für <gray>{word} <red>wurde von <gray>{staff}<red> abgelehnt."
+  suggest-cooldown: "<red>Bitte warte {time}s bevor du erneut einen Vorschlag machst."
+  first-long-suggestion: "<red>Wort überschreitet das Limit von {limit} Zeichen."
+  second-long-suggestion: "<red>Grund überschreitet das Limit von {limit} Zeichen."
+
+# ==============================================================================
+# PRÄVENTION & BENACHRICHTIGUNGEN
+# ==============================================================================
+book:
+  limit-open: "<red>Bitte warte {time}s bevor du Bücher erneut öffnest."
+  limit-pages: "<red>Buch enthält zu viele Seiten."
+  limit-complexity: "<red>Buchinhalt ist zu komplex."
+  evidence-title: "<red>Beweis: <white>{player}"
+  author-name: "<#09bbf5>SparkWord System"
+
+spam:
+  chars: "<red>Bitte spamme keine Zeichen."
+  repeat: "<red>Bitte wiederhole keine Nachrichten."
+  flood: "<red>Bitte mach langsamer."
+  digits: "<red>Zu viele Zahlen in der Nachricht."
+  ip: "<red>Werbung ist nicht erlaubt."
+  ip-split: "<red>Verdächtiges Muster erkannt."
+  injection: "<red>Illegale Syntax erkannt."
+  caps: "<red>Bitte missbrauche keine GROSSBUCHSTABEN."
+  evasion: "Umgehung erkannt"
+  
+notification:
+  staff-suggest: "[<yellow>Vorschlag<white>] <gray>{player} <white>-> <gray>{suggest} <white>({reason})"
+  blocked: "<red>Nachricht blockiert: {reason}"
+  alert: "[<red>ALARM<white>] <gray>{player} "
+  icon-symbol: "⚠"
+  spy-hover:
+    matches: "<red>Treffer: <white>{matches}"
+    original: "<gray>Original: <white>{original}"
+  details:
+    title: "<#09bbf5>Verstoßdetails"
+    type: "<gray>Typ: <white>{type}"
+    source: "<gray>Quelle: <white>{source}"
+    detected: "<gray>Erkannt: <red>{detected}"
+    evidence-click: "Hier ist der Beweis (Klick)"
+    evidence-error: "<red>Fehler: Beweis abgelaufen."
+
+# ==============================================================================
+# DEBUG
+# ==============================================================================
+debug:
+  general-enabled: "Debug allgemein aktiviert"
+  general-disabled: "Debug allgemein deaktiviert"
+  filter-enabled: "Debug Filter aktiviert"
+  filter-disabled: "Debug Filter deaktiviert."

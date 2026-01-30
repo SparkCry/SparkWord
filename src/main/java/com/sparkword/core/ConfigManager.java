@@ -18,71 +18,25 @@
 package com.sparkword.core;
 
 import com.sparkword.SparkWord;
+import com.sparkword.core.config.*;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.EventPriority;
 
 import java.io.File;
-import java.util.*;
 
 public class ConfigManager {
     private final SparkWord plugin;
 
-    private boolean updateCheck;
-    private boolean debugMode;
-    private EventPriority eventPriority;
+    // Config Modules
+    private final StorageSettings storageSettings = new StorageSettings();
+    private final GeneralSettings generalSettings = new GeneralSettings();
+    private final FilterSettings filterSettings = new FilterSettings();
+    private final AntiSpamSettings antiSpamSettings = new AntiSpamSettings();
+    private final NotificationSettings notificationSettings = new NotificationSettings();
+    private final SuggestionSettings suggestionSettings = new SuggestionSettings();
 
-    private boolean unicodeEnabled;
-    private boolean zalgoEnabled;
-    private boolean domainEnabled;
-    private boolean ipEnabled;
-
-    private boolean filterChat;
-    private boolean filterSigns;
-    private boolean filterBooks;
-    private boolean filterAnvils;
-
-    private boolean antiSpamEnabled;
-
-    private boolean antiFloodEnabled;
-    private int antiFloodMessages;
-    private int antiFloodDelay;
-
-    private boolean antiInjectionEnabled;
-    private boolean antiInjectionGeneric;
-    private boolean antiInjectionTags;
-    private boolean antiInjectionPapi;
-
-    private boolean antiRepeatEnabled;
-    private int repeatSimilarity;
-    private int repeatHistorySize;
-
-    private boolean charSpamEnabled;
-    private int charLimit;
-    private int wordLimit;
-
-    private boolean ipSplitEnabled;
-    private int digitsLimitChat;
-    private int digitsLimitWritable;
-
-    private int bookMaxPages;
-    private int bookMaxPageChars;
-    private int bookOpenDelay;
-    private int bookGlobalRateLimit;
-
-    private boolean replacementEnabled;
-    private String globalReplacement;
-
-    private boolean notifyIconEnabled;
-    private boolean notifyTypeFilter;
-    private boolean notifyTypeFlood;
-    private boolean notifyTypeIp;
-    private boolean notifyTypeZalgo;
-    private boolean notifyTypeInjection;
-
-    private boolean suggestionEnabled;
-    private int suggestionCooldown;
-    private int suggestionMaxWord;
-    private int suggestionMaxReason;
+    private FileConfiguration moderationConfig;
 
     public ConfigManager(SparkWord plugin) {
         this.plugin = plugin;
@@ -90,122 +44,275 @@ public class ConfigManager {
     }
 
     public void reload() {
+        // 1. Load main config.yml
         plugin.reloadConfig();
-        var config = plugin.getConfig();
+        FileConfiguration mainConfig = plugin.getConfig();
 
-        this.updateCheck = config.getBoolean("update-check", true);
-        this.debugMode = config.getBoolean("debug", false);
-        try {
-            this.eventPriority = EventPriority.valueOf(config.getString("event-priority", "HIGH").toUpperCase());
-        } catch (Exception e) { this.eventPriority = EventPriority.HIGH; }
+        // 2. Load moderation.yml
+        File modFile = new File(plugin.getDataFolder(), "moderation.yml");
+        if (!modFile.exists()) {
+            plugin.saveResource("moderation.yml", false);
+        }
+        this.moderationConfig = YamlConfiguration.loadConfiguration(modFile);
 
-        this.unicodeEnabled = config.getBoolean("system-filter.unicode", true);
-        this.zalgoEnabled = config.getBoolean("system-filter.zalgo", true);
-        this.domainEnabled = config.getBoolean("system-filter.domain", true);
-        this.ipEnabled = config.getBoolean("system-filter.ip", true);
+        // 3. Delegate loading to modules
+        this.generalSettings.load(mainConfig);
+        this.storageSettings.load(mainConfig);
+        this.suggestionSettings.load(mainConfig);
 
-        this.filterChat = config.getBoolean("filter-sources.chat", true);
-        this.filterSigns = config.getBoolean("filter-sources.signs", true);
-        this.filterBooks = config.getBoolean("filter-sources.books", true);
-        this.filterAnvils = config.getBoolean("filter-sources.anvils", true);
+        this.filterSettings.load(moderationConfig);
+        this.antiSpamSettings.load(moderationConfig);
+        this.notificationSettings.load(moderationConfig);
 
-        this.antiSpamEnabled = config.getBoolean("anti-spam.enabled", true);
-
-        this.antiFloodEnabled = config.getBoolean("anti-spam.anti-flood.enabled", true);
-        this.antiFloodMessages = config.getInt("anti-spam.anti-flood.messages", 4);
-        this.antiFloodDelay = config.getInt("anti-spam.anti-flood.delay", 2) * 1000;
-
-        this.antiInjectionEnabled = config.getBoolean("anti-spam.anti-injection.enabled", true);
-        this.antiInjectionGeneric = config.getBoolean("anti-spam.anti-injection.generic", true);
-        this.antiInjectionTags = config.getBoolean("anti-spam.anti-injection.tags", true);
-        this.antiInjectionPapi = config.getBoolean("anti-spam.anti-injection.papi", true);
-
-        this.antiRepeatEnabled = config.getBoolean("anti-spam.anti-repeat.enabled", true);
-        this.repeatSimilarity = config.getInt("anti-spam.anti-repeat.similarity", 80);
-        this.repeatHistorySize = config.getInt("anti-spam.anti-repeat.max-history", 2);
-
-        this.bookMaxPages = config.getInt("anti-spam.book-limits.max-pages", 30);
-        this.bookMaxPageChars = config.getInt("anti-spam.book-limits.max-chars-per-page", 256);
-        this.bookOpenDelay = config.getInt("anti-spam.book-limits.open-delay", 2);
-        this.bookGlobalRateLimit = config.getInt("anti-spam.book-limits.global-rate-limit", 20);
-
-        this.suggestionEnabled = config.getBoolean("suggestion.enabled", true);
-        this.suggestionCooldown = config.getInt("suggestion.suggest-cooldown", 60);
-        this.suggestionMaxWord = config.getInt("suggestion.max-word-length", 20);
-        this.suggestionMaxReason = config.getInt("suggestion.max-reason-length", 100);
-
-        this.charSpamEnabled = config.getBoolean("anti-spam.character-spam.enabled", true);
-        this.charLimit = config.getInt("anti-spam.character-spam.char-limit", 5);
-        this.wordLimit = config.getInt("anti-spam.character-spam.word-limit", 3);
-
-        this.ipSplitEnabled = config.getBoolean("anti-spam.ip-split-detection.enabled", true);
-        this.digitsLimitChat = config.getInt("anti-spam.digits-max-limit.chat-inputs", 10);
-        this.digitsLimitWritable = config.getInt("anti-spam.digits-max-limit.writable-inputs", 10);
-
-        this.replacementEnabled = config.getBoolean("replacement.enabled", true);
-        this.globalReplacement = config.getString("replacement.replace", "****");
-
-        this.notifyIconEnabled = config.getBoolean("notifications.icon-hover.enabled", true);
-        this.notifyTypeFilter = config.getBoolean("notifications.types.filter", true);
-        this.notifyTypeFlood = config.getBoolean("notifications.types.flood", true);
-        this.notifyTypeIp = config.getBoolean("notifications.types.ip", true);
-        this.notifyTypeZalgo = config.getBoolean("notifications.types.zalgo", true);
-        this.notifyTypeInjection = config.getBoolean("notifications.types.injection", true);
-
-        plugin.setDebugMode(this.debugMode);
+        // Apply runtime changes
+        plugin.setDebugMode(this.generalSettings.isDebugMode());
     }
 
-    public boolean isUpdateCheck() { return updateCheck; }
-    public boolean isDebugMode() { return debugMode; }
-    public EventPriority getEventPriority() { return eventPriority; }
-    public boolean isUnicodeEnabled() { return unicodeEnabled; }
-    public boolean isZalgoEnabled() { return zalgoEnabled; }
-    public boolean isDomainEnabled() { return domainEnabled; }
-    public boolean isIpEnabled() { return ipEnabled; }
-    public boolean isFilterChat() { return filterChat; }
-    public boolean isFilterSigns() { return filterSigns; }
-    public boolean isFilterBooks() { return filterBooks; }
-    public boolean isFilterAnvils() { return filterAnvils; }
+    // --- Accessors for Modules (The Future) ---
+    public StorageSettings getStorageSettings() {
+        return storageSettings;
+    }
 
-    public int getBookMaxPages() { return bookMaxPages; }
-    public int getBookMaxPageChars() { return bookMaxPageChars; }
-    public int getBookOpenDelay() { return bookOpenDelay; }
-    public int getBookGlobalRateLimit() { return bookGlobalRateLimit; }
+    public GeneralSettings getGeneralSettings() {
+        return generalSettings;
+    }
 
-    public boolean isAntiSpamEnabled() { return antiSpamEnabled; }
-    public boolean isAntiFloodEnabled() { return antiFloodEnabled; }
-    public int getAntiFloodMessages() { return antiFloodMessages; }
-    public int getAntiFloodDelay() { return antiFloodDelay; }
-    public boolean isAntiInjectionEnabled() { return antiInjectionEnabled; }
-    public boolean isAntiInjectionGeneric() { return antiInjectionGeneric; }
-    public boolean isAntiInjectionTags() { return antiInjectionTags; }
-    public boolean isAntiInjectionPapi() { return antiInjectionPapi; }
+    public FilterSettings getFilterSettings() {
+        return filterSettings;
+    }
 
-    public boolean isAntiRepeatEnabled() { return antiRepeatEnabled; }
-    public int getRepeatSimilarity() { return repeatSimilarity; }
-    public int getRepeatHistorySize() { return repeatHistorySize; }
+    public AntiSpamSettings getAntiSpamSettings() {
+        return antiSpamSettings;
+    }
 
-    public boolean isCharSpamEnabled() { return charSpamEnabled; }
-    public int getCharLimit() { return charLimit; }
-    public int getWordLimit() { return wordLimit; }
+    public NotificationSettings getNotificationSettings() {
+        return notificationSettings;
+    }
 
-    public boolean isIpSplitEnabled() { return ipSplitEnabled; }
-    public int getDigitsLimitChat() { return digitsLimitChat; }
-    public int getDigitsLimitWritable() { return digitsLimitWritable; }
+    public SuggestionSettings getSuggestionSettings() {
+        return suggestionSettings;
+    }
 
-    public boolean isReplacementEnabled() { return replacementEnabled; }
-    public String getGlobalReplacement() { return globalReplacement; }
+    // --- Legacy Getters (Delegates using Getters) ---
+    // FIXED: Using public getters instead of direct field access
 
-    public boolean isNotifyIconEnabled() { return notifyIconEnabled; }
-    public boolean isNotifyTypeFilter() { return notifyTypeFilter; }
-    public boolean isNotifyTypeFlood() { return notifyTypeFlood; }
-    public boolean isNotifyTypeIp() { return notifyTypeIp; }
-    public boolean isNotifyTypeZalgo() { return notifyTypeZalgo; }
-    public boolean isNotifyTypeInjection() { return notifyTypeInjection; }
+    public boolean isUpdateCheck() {
+        return generalSettings.isUpdateCheck();
+    }
 
-    public boolean isSuggestionEnabled() { return suggestionEnabled; }
-    public int getSuggestionCooldown() { return suggestionCooldown; }
-    public int getSuggestionMaxWord() { return suggestionMaxWord; }
-    public int getSuggestionMaxReason() { return suggestionMaxReason; }
+    public boolean isDebugMode() {
+        return generalSettings.isDebugMode();
+    }
 
+    public EventPriority getEventPriority() {
+        return generalSettings.getEventPriority();
+    }
+
+    public String getLocale() {
+        return generalSettings.getLocale();
+    }
+
+    public String getStorageType() {
+        return storageSettings.getStorageType();
+    }
+
+    public String getDbHost() {
+        return storageSettings.getDbHost();
+    }
+
+    public int getDbPort() {
+        return storageSettings.getDbPort();
+    }
+
+    public String getDbName() {
+        return storageSettings.getDbName();
+    }
+
+    public String getDbUser() {
+        return storageSettings.getDbUser();
+    }
+
+    public String getDbPassword() {
+        return storageSettings.getDbPassword();
+    }
+
+    public int getDbPoolSize() {
+        return storageSettings.getDbPoolSize();
+    }
+
+    public long getDbMaxLifetime() {
+        return storageSettings.getDbMaxLifetime();
+    }
+
+    public int getDbTimeout() {
+        return storageSettings.getDbTimeout();
+    }
+
+    public boolean isUnicodeEnabled() {
+        return filterSettings.isUnicodeEnabled();
+    }
+
+    public boolean isZalgoEnabled() {
+        return filterSettings.isZalgoEnabled();
+    }
+
+    public boolean isDomainEnabled() {
+        return antiSpamSettings.isDomainEnabled();
+    }
+
+    public boolean isIpEnabled() {
+        return antiSpamSettings.isIpEnabled();
+    }
+
+    public boolean isFilterChat() {
+        return filterSettings.isFilterChat();
+    }
+
+    public boolean isFilterSigns() {
+        return filterSettings.isFilterSigns();
+    }
+
+    public boolean isFilterBooks() {
+        return filterSettings.isFilterBooks();
+    }
+
+    public boolean isFilterAnvils() {
+        return filterSettings.isFilterAnvils();
+    }
+
+    public int getBookMaxPages() {
+        return antiSpamSettings.getBookMaxPages();
+    }
+
+    public int getBookMaxPageChars() {
+        return antiSpamSettings.getBookMaxPageChars();
+    }
+
+    public int getBookOpenDelay() {
+        return antiSpamSettings.getBookOpenDelay();
+    }
+
+    public int getBookGlobalRateLimit() {
+        return antiSpamSettings.getBookGlobalRateLimit();
+    }
+
+    public boolean isAntiSpamEnabled() {
+        return antiSpamSettings.isAntiSpamEnabled();
+    }
+
+    public boolean isAntiFloodEnabled() {
+        return antiSpamSettings.isAntiFloodEnabled();
+    }
+
+    public int getAntiFloodMessages() {
+        return antiSpamSettings.getAntiFloodMessages();
+    }
+
+    public int getAntiFloodDelay() {
+        return antiSpamSettings.getAntiFloodDelay();
+    }
+
+    public boolean isAntiInjectionEnabled() {
+        return antiSpamSettings.isAntiInjectionEnabled();
+    }
+
+    public boolean isAntiInjectionGeneric() {
+        return antiSpamSettings.isAntiInjectionGeneric();
+    }
+
+    public boolean isAntiInjectionTags() {
+        return antiSpamSettings.isAntiInjectionTags();
+    }
+
+    public boolean isAntiInjectionPapi() {
+        return antiSpamSettings.isAntiInjectionPapi();
+    }
+
+    public boolean isAntiRepeatEnabled() {
+        return antiSpamSettings.isAntiRepeatEnabled();
+    }
+
+    public int getRepeatSimilarity() {
+        return antiSpamSettings.getRepeatSimilarity();
+    }
+
+    public int getRepeatHistorySize() {
+        return antiSpamSettings.getRepeatHistorySize();
+    }
+
+    public long getRepeatCooldown() {
+        return antiSpamSettings.getRepeatCooldown();
+    }
+
+    public boolean isCharSpamEnabled() {
+        return antiSpamSettings.isCharSpamEnabled();
+    }
+
+    public int getCharLimit() {
+        return antiSpamSettings.getCharLimit();
+    }
+
+    public int getWordLimit() {
+        return antiSpamSettings.getWordLimit();
+    }
+
+    public boolean isIpSplitEnabled() {
+        return antiSpamSettings.isIpSplitEnabled();
+    }
+
+    public int getDigitsLimitChat() {
+        return antiSpamSettings.getDigitsLimitChat();
+    }
+
+    public int getDigitsLimitWritable() {
+        return antiSpamSettings.getDigitsLimitWritable();
+    }
+
+    public boolean isReplacementEnabled() {
+        return filterSettings.isReplacementEnabled();
+    }
+
+    public String getGlobalReplacement() {
+        return filterSettings.getGlobalReplacement();
+    }
+
+    public boolean isNotifyIconEnabled() {
+        return notificationSettings.isNotifyIconEnabled();
+    }
+
+    public boolean isNotifyTypeFilter() {
+        return notificationSettings.isNotifyTypeFilter();
+    }
+
+    public boolean isNotifyTypeFlood() {
+        return notificationSettings.isNotifyTypeFlood();
+    }
+
+    public boolean isNotifyTypeIp() {
+        return notificationSettings.isNotifyTypeIp();
+    }
+
+    public boolean isNotifyTypeZalgo() {
+        return notificationSettings.isNotifyTypeZalgo();
+    }
+
+    public boolean isNotifyTypeInjection() {
+        return notificationSettings.isNotifyTypeInjection();
+    }
+
+    public boolean isSuggestionEnabled() {
+        return suggestionSettings.isSuggestionEnabled();
+    }
+
+    public int getSuggestionCooldown() {
+        return suggestionSettings.getSuggestionCooldown();
+    }
+
+    public int getSuggestionMaxWord() {
+        return suggestionSettings.getSuggestionMaxWord();
+    }
+
+    public int getSuggestionMaxReason() {
+        return suggestionSettings.getSuggestionMaxReason();
+    }
 }

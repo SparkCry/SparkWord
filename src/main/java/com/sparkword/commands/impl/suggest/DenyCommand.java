@@ -17,8 +17,8 @@
  */
 package com.sparkword.commands.impl.suggest;
 
+import com.sparkword.Environment;
 import com.sparkword.commands.SubCommand;
-import com.sparkword.core.Environment;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -27,16 +27,19 @@ import java.util.Map;
 
 public class DenyCommand implements SubCommand {
     private final Environment env;
-    public DenyCommand(Environment env) { this.env = env; }
+
+    public DenyCommand(Environment env) {
+        this.env = env;
+    }
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
         if (!sender.hasPermission("sparkword.deny")) {
-             env.getMessageManager().sendMessage(sender, "no-permission");
-             return true;
+            env.getMessageManager().sendMessage(sender, "no-permission");
+            return true;
         }
         if (args.length < 1) {
-            env.getMessageManager().sendMessage(sender, "usage-deny");
+            env.getMessageManager().sendMessage(sender, "help.usage-deny");
             return true;
         }
 
@@ -53,11 +56,11 @@ public class DenyCommand implements SubCommand {
         env.getStorage().denySuggestionAsync(id, staffName, info -> {
             Bukkit.getScheduler().runTask(env.getPlugin(), () -> {
                 if (info != null) {
-                    env.getMessageManager().sendMessage(sender, "action-suggest-rejected");
+                    env.getMessageManager().sendMessage(sender, "suggestions.action-suggest-rejected");
 
                     Player suggester = Bukkit.getPlayer(info.playerUUID());
                     if (suggester != null && suggester.isOnline()) {
-                        env.getMessageManager().sendMessage(suggester, "suggest-deny", Map.of("word", info.word(), "staff", staffName));
+                        env.getMessageManager().sendMessage(suggester, "suggestions.suggest-deny", Map.of("word", info.word(), "staff", staffName));
                     }
                 } else {
                     env.getMessageManager().sendMessage(sender, "error-id-not-found");

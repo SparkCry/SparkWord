@@ -17,13 +17,16 @@
  */
 package com.sparkword.commands.impl.root;
 
+import com.sparkword.Environment;
 import com.sparkword.commands.SubCommand;
-import com.sparkword.core.Environment;
 import org.bukkit.command.CommandSender;
 
 public class DebugCommand implements SubCommand {
     private final Environment env;
-    public DebugCommand(Environment env) { this.env = env; }
+
+    public DebugCommand(Environment env) {
+        this.env = env;
+    }
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
@@ -36,7 +39,7 @@ public class DebugCommand implements SubCommand {
             boolean newState = !env.getPlugin().isDebugFilter();
             env.getPlugin().setDebugFilter(newState);
 
-            String key = newState ? "system.debug.filter-enabled" : "system.debug.filter-disabled";
+            String key = newState ? "debug.filter-enabled" : "debug.filter-disabled";
             env.getMessageManager().sendMessage(sender, key);
             return true;
         }
@@ -44,7 +47,7 @@ public class DebugCommand implements SubCommand {
         boolean newState = !env.getPlugin().isDebugMode();
         env.getPlugin().setDebugMode(newState);
 
-        String key = newState ? "system.debug.general-enabled" : "system.debug.general-disabled";
+        String key = newState ? "debug.general-enabled" : "debug.general-disabled";
         env.getMessageManager().sendMessage(sender, key);
         return true;
     }

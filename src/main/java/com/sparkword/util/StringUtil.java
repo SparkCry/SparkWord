@@ -19,7 +19,9 @@ package com.sparkword.util;
 
 public final class StringUtil {
 
-    private StringUtil() { throw new UnsupportedOperationException("Utility class"); }
+    private StringUtil() {
+        throw new UnsupportedOperationException("Utility class");
+    }
 
     public static boolean containsIgnoreCase(String src, String what) {
         final int length = what.length();
@@ -57,9 +59,11 @@ public final class StringUtil {
     private static int[] matches(CharSequence s1, CharSequence s2) {
         CharSequence max, min;
         if (s1.length() > s2.length()) {
-            max = s1; min = s2;
+            max = s1;
+            min = s2;
         } else {
-            max = s2; min = s1;
+            max = s2;
+            min = s1;
         }
 
         int range = Math.max(max.length() / 2 - 1, 0);

@@ -17,9 +17,9 @@
  */
 package com.sparkword.commands.impl.logs;
 
+import com.sparkword.Environment;
 import com.sparkword.commands.SubCommand;
-import com.sparkword.core.Environment;
-import com.sparkword.model.AuditEntry;
+import com.sparkword.core.storage.model.AuditEntry;
 import com.sparkword.util.TimeUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -35,7 +35,9 @@ import java.util.Map;
 public class AuditCommand implements SubCommand {
     private final Environment env;
 
-    public AuditCommand(Environment env) { this.env = env; }
+    public AuditCommand(Environment env) {
+        this.env = env;
+    }
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
@@ -70,45 +72,51 @@ public class AuditCommand implements SubCommand {
         String action = log.action();
         Map<String, String> data = parseDetail(log.detail());
 
-        Component base = env.getMessageManager().getComponent("logs.audit.format.base", Map.of(
+        Component base = env.getMessageManager().getComponent("audit.format.base", Map.of(
             "date", dateStr,
             "staff", log.staffName()
         ), false);
 
         Component details = switch (action.toUpperCase()) {
-            case "MUTE" -> env.getMessageManager().getComponent("logs.audit.format.actions.mute", Map.of("player", data.getOrDefault("Player", "?")), false)
-                .append(hoverReason(data.get("Reason")));
+            case "MUTE" ->
+                env.getMessageManager().getComponent("audit.format.actions.mute", Map.of("player", data.getOrDefault("Player", "?")), false)
+                    .append(hoverReason(data.get("Reason")));
 
-            case "PERMUTE" -> env.getMessageManager().getComponent("logs.audit.format.actions.permute", Map.of("player", data.getOrDefault("Player", "?")), false)
-                .append(hoverReason(data.get("Reason")));
+            case "PERMUTE" ->
+                env.getMessageManager().getComponent("audit.format.actions.permute", Map.of("player", data.getOrDefault("Player", "?")), false)
+                    .append(hoverReason(data.get("Reason")));
 
-            case "TEMPMUTE" -> env.getMessageManager().getComponent("logs.audit.format.actions.tempmute", Map.of("player", data.getOrDefault("Player", "?")), false)
-                .append(hoverReason(data.get("Reason")));
+            case "TEMPMUTE" ->
+                env.getMessageManager().getComponent("audit.format.actions.tempmute", Map.of("player", data.getOrDefault("Player", "?")), false)
+                    .append(hoverReason(data.get("Reason")));
 
-            case "UNMUTE" -> env.getMessageManager().getComponent("logs.audit.format.actions.unmute", Map.of("player", data.getOrDefault("Player", "?")), false)
-                .append(hoverReason(data.get("Reason")));
+            case "UNMUTE" ->
+                env.getMessageManager().getComponent("audit.format.actions.unmute", Map.of("player", data.getOrDefault("Player", "?")), false)
+                    .append(hoverReason(data.get("Reason")));
 
-            case "WARN" -> env.getMessageManager().getComponent("logs.audit.format.actions.warn", Map.of("player", data.getOrDefault("Player", "?")), false)
-                .append(hoverReason(data.get("Reason")));
+            case "WARN" ->
+                env.getMessageManager().getComponent("audit.format.actions.warn", Map.of("player", data.getOrDefault("Player", "?")), false)
+                    .append(hoverReason(data.get("Reason")));
 
-            case "PURGE" -> env.getMessageManager().getComponent("logs.audit.format.actions.purge", Map.of(
+            case "PURGE" -> env.getMessageManager().getComponent("audit.format.actions.purge", Map.of(
                 "type", data.getOrDefault("Type", "all"),
                 "days", data.getOrDefault("Days", "0")
             ), false);
 
-            case "ACCEPT" -> env.getMessageManager().getComponent("logs.audit.format.actions.accept", Map.of(
+            case "ACCEPT" -> env.getMessageManager().getComponent("audit.format.actions.accept", Map.of(
                 "word", data.getOrDefault("Word", "?"),
                 "list", data.getOrDefault("List", "n")
             ), false);
 
-            case "DENY" -> env.getMessageManager().getComponent("logs.audit.format.actions.deny", Map.of(
+            case "DENY" -> env.getMessageManager().getComponent("audit.format.actions.deny", Map.of(
                 "word", data.getOrDefault("Word", "?")
             ), false);
 
-            case "API_MUTE" -> env.getMessageManager().getComponent("logs.audit.format.actions.api-mute", Map.of("player", data.getOrDefault("Player", "?")), false)
-                .append(hoverReason(data.get("Reason")));
+            case "API_MUTE" ->
+                env.getMessageManager().getComponent("audit.format.actions.api-mute", Map.of("player", data.getOrDefault("Player", "?")), false)
+                    .append(hoverReason(data.get("Reason")));
 
-            default -> env.getMessageManager().getComponent("logs.audit.format.actions.default", Map.of(
+            default -> env.getMessageManager().getComponent("audit.format.actions.default", Map.of(
                 "action", action,
                 "detail", log.detail()
             ), false);
@@ -119,7 +127,7 @@ public class AuditCommand implements SubCommand {
 
     private Component hoverReason(String reason) {
         String safeReason = reason != null ? reason : "No reason";
-        Component hoverText = env.getMessageManager().getComponent("logs.audit.hover-reason", Collections.emptyMap(), false);
+        Component hoverText = env.getMessageManager().getComponent("audit.hover-reason", Collections.emptyMap(), false);
 
         return hoverText.hoverEvent(HoverEvent.showText(Component.text(safeReason, NamedTextColor.GRAY)));
     }

@@ -35,11 +35,10 @@ import java.util.regex.Pattern;
 
 public class UpdateChecker implements Listener {
 
-    private final SparkWord plugin;
     private static final String GITHUB_REPO = "SparkCry/SparkWord";
     private static final String API_URL = "https://api.github.com/repos/" + GITHUB_REPO + "/releases/latest";
     private static final Pattern VERSION_PATTERN = Pattern.compile("\"tag_name\"\\s*:\\s*\"([^\"]+)\"");
-
+    private final SparkWord plugin;
     private boolean updateAvailable = false;
     private String latestVersion = "";
 

@@ -17,6 +17,7 @@
  */
 package com.sparkword.filters.util;
 
+import com.sparkword.moderation.filters.util.TextNormalizer;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -31,7 +32,7 @@ public class TextNormalizerTest {
     }
 
     @ParameterizedTest
-    @DisplayName("Debe normalizar Leetspeak y acentos agresivamente")
+    @DisplayName("Must normalize Leetspeak and accents aggressively")
     @CsvSource({
         "'v4c4', 'vaca'",
         "'vácá', 'vaca'",
@@ -41,14 +42,14 @@ public class TextNormalizerTest {
     })
     void testSearchNormalization(String input, String expected) {
         String result = normalize(input);
-        assertEquals(expected, result, "Falló normalización de: " + input);
+        assertEquals(expected, result, "Normalization failed for: " + input);
     }
 
     @Test
-    @DisplayName("Debe detectar caracteres ilegales")
+    @DisplayName("Must detect illegal characters")
     void testSecurityValidation() {
-        assertFalse(TextNormalizer.validateCharacters("h\u0300o\u0301l\u0302a"), "Debió bloquear Zalgo");
-        assertFalse(TextNormalizer.validateCharacters("v\u0430c\u0430"), "Debió bloquear caracteres cirílicos");
-        assertTrue(TextNormalizer.validateCharacters("Hola! ¿Cómo estás?"), "Debió permitir texto válido");
+        assertFalse(TextNormalizer.validateCharacters("h\u0300o\u0301l\u0302a"), "Should have blocked Zalgo");
+        assertFalse(TextNormalizer.validateCharacters("v\u0430c\u0430"), "Should have blocked Cyrillic characters");
+        assertTrue(TextNormalizer.validateCharacters("Hello! How are you?"), "Should have allowed valid text");
     }
 }

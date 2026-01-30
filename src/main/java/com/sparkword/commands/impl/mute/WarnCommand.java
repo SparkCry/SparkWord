@@ -17,18 +17,23 @@
  */
 package com.sparkword.commands.impl.mute;
 
+import com.sparkword.Environment;
 import com.sparkword.commands.SubCommand;
-import com.sparkword.core.Environment;
+import com.sparkword.util.PaperProfileUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 public class WarnCommand implements SubCommand {
     private final Environment env;
-    public WarnCommand(Environment env) { this.env = env; }
+
+    public WarnCommand(Environment env) {
+        this.env = env;
+    }
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
@@ -37,25 +42,44 @@ public class WarnCommand implements SubCommand {
             return true;
         }
         if (args.length < 2) {
-            env.getMessageManager().sendMessage(sender, "usage-warn");
+            env.getMessageManager().sendMessage(sender, "help.usage-warn");
             return true;
         }
-        Player target = Bukkit.getPlayer(args[0]);
-        if (target == null) { env.getMessageManager().sendMessage(sender, "player-not-found"); return true; }
 
+        String targetName = args[0];
         String reason = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
 
-        int pid = env.getPlayerDataManager().getPlayerId(target.getUniqueId(), target.getName());
+        env.getStorage().getPlayerIdByNameAsync(targetName).thenCompose(dbId -> {
+            if (dbId != -1) return CompletableFuture.completedFuture(Map.entry(dbId, targetName));
 
-        if (pid != -1) {
+            return PaperProfileUtil.resolve(targetName).thenCompose(target -> {
+                if (target == null) return CompletableFuture.completedFuture(null);
+                String resolvedName = target.getName() != null ? target.getName() : targetName;
+                return env.getStorage().getPlayerIdAsync(target.getUniqueId(), resolvedName)
+                    .thenApply(id -> Map.entry(id, resolvedName));
+            });
+        }).thenAccept(entry -> {
+            if (entry == null || entry.getKey() == -1) {
+                Bukkit.getScheduler().runTask(env.getPlugin(), () ->
+                    env.getMessageManager().sendMessage(sender, "player-not-found"));
+                return;
+            }
+
+            int pid = entry.getKey();
+            String name = entry.getValue();
+
             env.getStorage().addWarning(pid, reason, sender.getName());
-        } else {
-            env.getStorage().getPlayerIdAsync(target.getUniqueId(), target.getName())
-                .thenAccept(id -> env.getStorage().addWarning(id, reason, sender.getName()));
-        }
 
-        env.getMessageManager().sendMessage(target, "warn-receive", Map.of("staff", sender.getName(), "reason", reason));
-        env.getMessageManager().sendMessage(sender, "warn-sent", Map.of("player", target.getName()));
+            Bukkit.getScheduler().runTask(env.getPlugin(), () -> {
+                env.getMessageManager().sendMessage(sender, "moderation.warn-sent", Map.of("player", name));
+
+                Player onlineTarget = Bukkit.getPlayerExact(name);
+                if (onlineTarget != null) {
+                    env.getMessageManager().sendMessage(onlineTarget, "moderation.warn-receive", Map.of("staff", sender.getName(), "reason", reason));
+                }
+            });
+        });
+
         return true;
     }
 }

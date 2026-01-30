@@ -20,7 +20,8 @@ package com.sparkword.core;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.sparkword.SparkWord;
-import com.sparkword.filters.util.TextNormalizer;
+import com.sparkword.core.config.NotificationSettings;
+import com.sparkword.moderation.filters.util.TextNormalizer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -36,15 +37,14 @@ import java.util.UUID;
 
 public class NotifyManager {
 
-    private final SparkWord plugin;
-    private final Cache<String, ItemStack> evidenceBookCache;
-    private final MiniMessage miniMessage;
-
     private static final String ICON_FLOOD = "🌊";
     private static final String ICON_IP = "🌐";
     private static final String ICON_ZALGO = "⚡";
     private static final String ICON_INJECTION = "💉";
     private static final String ICON_FILTER = "⚠";
+    private final SparkWord plugin;
+    private final Cache<String, ItemStack> evidenceBookCache;
+    private final MiniMessage miniMessage;
 
     public NotifyManager(SparkWord plugin) {
         this.plugin = plugin;
@@ -58,17 +58,19 @@ public class NotifyManager {
     private boolean shouldNotify(String category) {
         if (category == null) return true;
         String c = category.toLowerCase();
-        ConfigManager cfg = plugin.getEnvironment().getConfigManager();
+
+        // CHANGED: Access settings via module
+        NotificationSettings settings = plugin.getEnvironment().getConfigManager().getNotificationSettings();
 
         if (c.contains("repeat") || c.contains("digits") || c.contains("chars") || c.contains("caps")) return false;
 
-        if (c.contains("flood") && !cfg.isNotifyTypeFlood()) return false;
-        if ((c.contains("ip") || c.contains("domain")) && !cfg.isNotifyTypeIp()) return false;
-        if ((c.contains("zalgo") || c.contains("unicode")) && !cfg.isNotifyTypeZalgo()) return false;
-        if (c.contains("injection") && !cfg.isNotifyTypeInjection()) return false;
+        if (c.contains("flood") && !settings.isNotifyTypeFlood()) return false;
+        if ((c.contains("ip") || c.contains("domain")) && !settings.isNotifyTypeIp()) return false;
+        if ((c.contains("zalgo") || c.contains("unicode")) && !settings.isNotifyTypeZalgo()) return false;
+        if (c.contains("injection") && !settings.isNotifyTypeInjection()) return false;
 
         if (!c.contains("flood") && !c.contains("ip") && !c.contains("zalgo") && !c.contains("injection")) {
-            if (!cfg.isNotifyTypeFilter()) return false;
+            return settings.isNotifyTypeFilter();
         }
 
         return true;
@@ -77,7 +79,7 @@ public class NotifyManager {
     public void notifySuggestion(Player player, String word, String reason) {
         if (!hasStaffOnline()) return;
 
-        Component msg = plugin.getEnvironment().getMessageManager().getComponent("notify-staff-suggest", Map.of(
+        Component msg = plugin.getEnvironment().getMessageManager().getComponent("notification.staff-suggest", Map.of(
             "player", player.getName(),
             "suggest", word,
             "reason", reason != null ? reason : "No reason"
@@ -111,7 +113,7 @@ public class NotifyManager {
         Component iconComponent = getIconComponent(safeSource, safeCategory, safeContent, safeDetected, null);
 
         Component message = plugin.getEnvironment().getMessageManager().getComponent(
-            "alert",
+            "notification.alert",
             Map.of("player", offender.getName()),
             true
         ).append(iconComponent);
@@ -136,7 +138,7 @@ public class NotifyManager {
         Component iconComponent = getIconComponent("Book", reason, "Book Content...", detectedWord, openBookEvent);
 
         Component message = plugin.getEnvironment().getMessageManager().getComponent(
-            "alert",
+            "notification.alert",
             Map.of("player", player.getName()),
             true
         ).append(iconComponent);
@@ -209,6 +211,11 @@ public class NotifyManager {
         else plugin.getEnvironment().getMessageManager().sendMessage(staff, "notification.details.evidence-error");
     }
 
-    private boolean hasStaffOnline() { return !Bukkit.getOnlinePlayers().isEmpty(); }
-    private void broadcastComponent(Component comp) { Bukkit.broadcast(comp, "sparkword.notify"); }
+    private boolean hasStaffOnline() {
+        return !Bukkit.getOnlinePlayers().isEmpty();
+    }
+
+    private void broadcastComponent(Component comp) {
+        Bukkit.broadcast(comp, "sparkword.notify");
+    }
 }

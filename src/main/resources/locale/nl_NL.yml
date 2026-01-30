@@ -1,0 +1,184 @@
+# ==============================================================================
+# SPARKWORD BERICHTEN v1.0.1
+# ==============================================================================
+prefix: "[<reset><gradient:#09bbf5:#FFFFFF>SparkWord</gradient><white>] "
+  
+# ==============================================================================
+# ALGEMEEN
+# ==============================================================================
+reload: "Configuratie en berichten herladen."
+no-permission: "<red>Je hebt geen toestemming om dit commando uit te voeren."
+player-not-found: "<red>Speler niet gevonden of offline."
+error-player-only: "<red>Dit commando is alleen voor spelers."
+error-register-player: "<red>Kon spelersgegevens niet registreren of vinden."
+error-command-length: "<red>Commando te lang. Kort je bericht in a.u.b."
+error-db-error: "<red>Er is een databasefout opgetreden."
+error-invalid-page: "<red>Ongeldig paginanummer."
+error-invalid-time: "<red>Ongeldig tijdsformaat (bijv. 1d, 12h, 30m)."
+error-invalid-days: "<red>Ongeldig aantal dagen."
+error-negative: "<red>Dagen kunnen niet negatief zijn."
+error-invalid-id: "<red>Ongeldige ID opgegeven."
+error-id-not-found: "<red>Item met die ID niet gevonden."
+
+# ==============================================================================
+# COMMANDO HULP BESCHRIJVINGEN
+# ==============================================================================
+help:
+  info: "/sw info <gray>[pagina] <white>- Plugin informatie"
+  debug: "/sw-debug <gray>[filter] <white>- Wissel debug-modi"
+  reload: "/sw reload <white>- Configuratie herladen"
+  purge: "/sw purge <gray><type> <dagen> <white>- Database records opschonen"
+  logs: "/sw logs <gray>[type] [pagina] <white>- Bekijk overtredingslogs"
+  audit: "/sw audit <gray>[speler] <white>- Bekijk staff auditlogs"
+  accept: "/sw accept <gray><id> <lijst> <white>- Suggestie accepteren"
+  deny: "/sw deny <gray><id> <white>- Suggestie weigeren"
+  add: "/sw add <gray><lijst> <woord> <white>- Woord toevoegen aan filter"
+  remove: "/sw remove <gray><lijst> <woord> <white>- Woord verwijderen uit filter"
+  list: "/sw list <gray>[type] <white>- Lijst filters (n, s, wc, sg)"
+  mute: "/sw-mute <gray><speler> [reden] <white>- Permanent dempen (mute)"
+  permute: "/sw-permute <gray><speler> [reden] <white>- Perm dempen (Totale Blokkade)"
+  tempmute: "/sw-tempmute <gray><speler> <tijd> [reden] <white>- Tijdelijk dempen"
+  unmute: "/sw-unmute <gray><speler> <white>- Dempen opheffen"
+  warn: "/sw-warn <gray><speler> <reden> <white>- Waarschuw een speler"
+  checkmute: "/sw-checkmute <gray><speler> <white>- Controleer actieve dempingen"
+  scan: "/sw-scan <gray><speler> [pagina] <white>- Bekijk spelersgeschiedenis"
+  suggest: "/sw-sg <gray><woord> [reden] <white>- Suggestie voor woordfilter"
+  footer-next: "Typ /sw info {page} voor meer."
+  
+# ==============================================================================
+# COMMANDO GEBRUIK
+# ==============================================================================
+  usage-purge: "<red>Gebruik: /sw purge <sg|b|a|all> <dagen>"
+  usage-accept: "<red>Gebruik: /sw accept <id> <n|s|wc>"
+  usage-deny: "<red>Gebruik: /sw deny <id>"
+  usage-add: "<red>Gebruik: /sw add <n|s|wc> <woord>"
+  usage-remove: "<red>Gebruik: /sw remove <n|s|wc> <woord>"
+  usage-list: "<red>Gebruik: /sw list <n|s|wc|sg> [pagina]"
+  usage-mute: "<red>Gebruik: /sw-mute <speler> [reden]"  
+  usage-permute: "<red>Gebruik: /sw-permute <speler> [reden]"
+  usage-tempmute: "<red>Gebruik: /sw-tempmute <speler> <tijd> [reden]"
+  usage-unmute: "<red>Gebruik: /sw-unmute <speler>"
+  usage-warn: "<red>Gebruik: /sw-warn <speler> <reden>"
+  usage-checkmute: "<red>Gebruik: /sw-checkmute <speler>"
+  usage-scan: "<red>Gebruik: /sw-scan <speler> [pagina]"
+  suggest-usage: "<red>Gebruik: /sw-sg <woord> <reden>"
+
+# ==============================================================================
+# FILTER & LIJSTEN
+# ==============================================================================
+filter:
+  exists: "<red>Dat woord bestaat al in de lijst."
+  word-added: "Woord toegevoegd aan lijst <gray>{list}<white>."
+  word-removed: "Woord verwijderd uit lijst <gray>{list}<white>."
+  word-not-found: "<red>Woord niet gevonden in de opgegeven lijst."
+  list-empty: "<gray>Deze lijst is leeg."
+
+# ==============================================================================
+# MODERATIE
+# ==============================================================================
+moderation:
+  mute-success: "Demping toegepast op <gray>{player} <#09bbf5>| <white>duur: {time}"
+  unmute-success: "De demping van de speler is opgeheven. <gray>{player}<white>."
+  check-mute-true: "<red>{player} is gedempt voor {time}."
+  check-mute-false: "{player} is niet gedempt."
+  player-muted: "<gray>{staff} <red>heeft je voor <gray>{time} <red>gedempt. Reden: <white>{reason}"
+  player-permuted: "<red>Je kunt hier geen interactie mee hebben terwijl je globaal gedempt bent."
+  warn-sent: "<gray>{player}<white> gewaarschuwd."
+  warn-receive: "<red>WAARSCHUWING ONTVANGEN <white>Staff: <gray>{staff} <white>Reden: <gray>{reason}"
+  action-purge-start: "<gray>Starten van opschoontaak..."
+  action-purge-complete: "Opschonen voltooid. <gray>{count} <white>items verwijderd."
+  scan-empty: "<gray>Geen recente overtredingen gevonden."
+  default:
+    mute: "permanent"
+    temp: "tijdelijk"
+    perm: "globaal"
+    no-reason: "Geen reden"
+  
+# ==============================================================================
+# LOGS & AUDIT
+# ==============================================================================
+logs:
+  viewer:
+    no-records: "<gray>Geen records gevonden."
+    hover-source-book: "<gray>Bron: <white>Boek"
+    hover-content-book: "<gray>Boekinhoud:"
+    hover-censor-book: "<red>Gedetecteerd: {detected}"
+    hover-flood: "<#09bbf5>Flood-geschiedenis:"
+
+audit:
+  hover-reason: "<gray> [Reden]"
+  format:
+    base: "<gray>[{date}] <#09bbf5>{staff}<gray>: "
+    actions:
+      mute: "<red>MUTE <gray>{player}"
+      permute: "<dark_red>PERMUTE <gray>{player}"
+      tempmute: "<red>TEMPMUTE <gray>{player}"
+      unmute: "UNMUTE <gray>{player}"
+      warn: "WARN <gray>{player}"
+      purge: "<gray>OPSCHONEN <white>Type: {type} | Dagen: {days}"
+      accept: "ACCEPTEREN <gray>{word} ({list})"
+      deny: "<red>WEIGEREN <gray>{word}"
+      api-mute: "<red>API_MUTE <gray>{player}"
+      default: "{action} <gray>- {detail}"
+
+# ==============================================================================
+# SUGGESTIES
+# ==============================================================================
+suggestions:
+  disabled: "<red>Suggesties zijn momenteel uitgeschakeld."
+  pending-suggestion: "In afwachting van suggesties"
+  suggest-success: "Suggestie verzonden naar staff. Bedankt!"
+  suggest-exists: "<red>Dat woord is al in afwachting van suggestie."
+  action-suggest-accepted: "Suggestie geaccepteerd voor woord: <gray>{word}"
+  action-suggest-rejected: "<gray>Suggestie afgewezen."
+  suggest-accept: "Je suggestie voor <gray>{word} <white>is geaccepteerd door <gray>{staff}<white>."
+  suggest-deny: "<red>Je suggestie voor <gray>{word} <red>is afgewezen door <gray>{staff}<red>."
+  suggest-cooldown: "<red>Wacht a.u.b. {time}s voordat je opnieuw suggereert."
+  first-long-suggestion: "<red>Woord overschrijdt limiet van {limit} tekens."
+  second-long-suggestion: "<red>Reden overschrijdt limiet van {limit} tekens."
+
+# ==============================================================================
+# PREVENTIE & MELDINGEN
+# ==============================================================================
+book:
+  limit-open: "<red>Wacht a.u.b. {time}s voordat je boeken opnieuw opent."
+  limit-pages: "<red>Boek bevat te veel pagina's."
+  limit-complexity: "<red>Boekinhoud is te complex."
+  evidence-title: "<red>Bewijs: <white>{player}"
+  author-name: "<#09bbf5>SparkWord Systeem"
+
+spam:
+  chars: "<red>Spam a.u.b. geen tekens."
+  repeat: "<red>Herhaal berichten a.u.b. niet."
+  flood: "<red>Doe a.u.b. rustig aan."
+  digits: "<red>Te veel cijfers in bericht."
+  ip: "<red>Adverteren is niet toegestaan."
+  ip-split: "<red>Verdacht patroon gedetecteerd."
+  injection: "<red>Illegale syntax gedetecteerd."
+  caps: "<red>Misbruik a.u.b. geen HOOFDLETTERS."
+  evasion: "Omzeiling Gedetecteerd"
+  
+notification:
+  staff-suggest: "[<yellow>Suggereren<white>] <gray>{player} <white>-> <gray>{suggest} <white>({reason})"
+  blocked: "<red>Bericht geblokkeerd: {reason}"
+  alert: "[<red>ALERT<white>] <gray>{player} "
+  icon-symbol: "⚠"
+  spy-hover:
+    matches: "<red>Overeenkomsten: <white>{matches}"
+    original: "<gray>Origineel: <white>{original}"
+  details:
+    title: "<#09bbf5>Overtredingsdetails"
+    type: "<gray>Type: <white>{type}"
+    source: "<gray>Bron: <white>{source}"
+    detected: "<gray>Gedetecteerd: <red>{detected}"
+    evidence-click: "Hier is het bewijs (Klik)"
+    evidence-error: "<red>Fout: Bewijs verlopen."
+
+# ==============================================================================
+# DEBUG
+# ==============================================================================
+debug:
+  general-enabled: "Debug algemeen ingeschakeld"
+  general-disabled: "Debug algemeen uitgeschakeld"
+  filter-enabled: "Debug filter ingeschakeld"
+  filter-disabled: "Debug filter uitgeschakeld."

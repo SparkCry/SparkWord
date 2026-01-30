@@ -32,20 +32,24 @@ import com.sparkword.commands.impl.root.ReloadCommand;
 import com.sparkword.commands.impl.suggest.AcceptCommand;
 import com.sparkword.commands.impl.suggest.DenyCommand;
 import com.sparkword.commands.impl.suggest.SuggestCommand;
-import com.sparkword.core.*;
-import com.sparkword.filters.FilterManager;
-import com.sparkword.filters.word.loader.WordListLoader;
-import com.sparkword.filters.word.result.FilterResult;
-import com.sparkword.listeners.ChatListener;
-import com.sparkword.model.AuditEntry;
-import com.sparkword.model.LogEntry;
-import com.sparkword.model.MuteInfo;
-import com.sparkword.model.MuteInfo.MuteScope;
-import com.sparkword.spammers.SpamManager;
-import com.sparkword.spammers.SpamManager.SpamResult;
-import com.sparkword.storage.repositories.AuditRepository;
-import com.sparkword.storage.repositories.ReportRepository;
-import com.sparkword.storage.repositories.SuggestionRepository.SuggestionInfo;
+import com.sparkword.core.ConfigManager;
+import com.sparkword.core.MessageManager;
+import com.sparkword.core.NotifyManager;
+import com.sparkword.core.config.*;
+import com.sparkword.core.storage.PlayerDataManager;
+import com.sparkword.core.storage.StorageManager;
+import com.sparkword.core.storage.model.AuditEntry;
+import com.sparkword.core.storage.model.LogEntry;
+import com.sparkword.core.storage.model.MuteInfo;
+import com.sparkword.core.storage.model.MuteInfo.MuteScope;
+import com.sparkword.core.storage.spi.dao.AuditDAO;
+import com.sparkword.core.storage.spi.dao.ReportDAO;
+import com.sparkword.core.storage.spi.dao.SuggestionDAO.SuggestionInfo;
+import com.sparkword.moderation.antispam.SpamManager;
+import com.sparkword.moderation.filters.FilterManager;
+import com.sparkword.moderation.filters.word.loader.WordListLoader;
+import com.sparkword.moderation.filters.word.result.FilterResult;
+import com.sparkword.moderation.listeners.ChatListener;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -57,6 +61,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.profile.PlayerProfile;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -67,7 +72,11 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -77,27 +86,59 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class SystemIntegrationTest {
 
-    @Mock private SparkWord plugin;
-    @Mock private Environment env;
-    @Mock private MessageManager messageManager;
-    @Mock private ConfigManager configManager;
-    @Mock private FilterManager filterManager;
-    @Mock private WordListLoader wordLoader;
-    @Mock private SQLiteStorage storage;
-    @Mock private NotifyManager notifyManager;
-    @Mock private PlayerDataManager playerDataManager;
-    @Mock private SpamManager spamManager;
-    @Mock private FileConfiguration mockConfig;
+    @Mock
+    private SparkWord plugin;
+    @Mock
+    private Environment env;
+    @Mock
+    private MessageManager messageManager;
+    @Mock
+    private ConfigManager configManager;
+    @Mock
+    private FilterManager filterManager;
+    @Mock
+    private WordListLoader wordLoader;
+    @Mock
+    private StorageManager storage;
+    @Mock
+    private NotifyManager notifyManager;
+    @Mock
+    private PlayerDataManager playerDataManager;
+    @Mock
+    private SpamManager spamManager;
+    @Mock
+    private FileConfiguration mockConfig;
 
-    @Mock private CommandSender adminSender;
-    @Mock private Player playerSender;
-    @Mock private Server server;
-    @Mock private PluginManager pluginManager;
-    @Mock private BukkitScheduler scheduler;
-    @Mock private OfflinePlayer mockOfflinePlayer;
+    @Mock
+    private GeneralSettings generalSettings;
+    @Mock
+    private FilterSettings filterSettings;
+    @Mock
+    private AntiSpamSettings antiSpamSettings;
+    @Mock
+    private SuggestionSettings suggestionSettings;
+    @Mock
+    private NotificationSettings notificationSettings;
 
-    @Mock private AuditRepository auditRepo;
-    @Mock private ReportRepository reportRepo;
+    @Mock
+    private CommandSender adminSender;
+    @Mock
+    private Player playerSender;
+    @Mock
+    private Server server;
+    @Mock
+    private PluginManager pluginManager;
+    @Mock
+    private BukkitScheduler scheduler;
+    @Mock
+    private OfflinePlayer mockOfflinePlayer;
+    @Mock
+    private PlayerProfile mockPlayerProfile;
+
+    @Mock
+    private AuditDAO auditRepo;
+    @Mock
+    private ReportDAO reportRepo;
 
     private MockedStatic<Bukkit> bukkitMock;
 
@@ -108,8 +149,29 @@ class SystemIntegrationTest {
         bukkitMock.when(Bukkit::getScheduler).thenReturn(scheduler);
         bukkitMock.when(Bukkit::getOnlinePlayers).thenReturn(Collections.singletonList(playerSender));
 
+        // Setup Player Profile Resolution Mocks
+        UUID fixedUUID = UUID.fromString("c0ddc939-5f0a-4a53-96c4-b558d6c5098e"); // Consistent UUID for tests
+        lenient().when(mockOfflinePlayer.getUniqueId()).thenReturn(fixedUUID);
+        lenient().when(mockOfflinePlayer.getName()).thenReturn("TargetPlayer");
+
+        // 1. Online player check (Return null to simulate offline by default)
+        bukkitMock.when(() -> Bukkit.getPlayerExact(anyString())).thenReturn(null);
+
+        // 2. Offline player resolution (By UUID, used after profile update)
+        bukkitMock.when(() -> Bukkit.getOfflinePlayer(any(UUID.class))).thenReturn(mockOfflinePlayer);
+
+        // 3. Fallback/Legacy resolution
         bukkitMock.when(() -> Bukkit.getOfflinePlayer(anyString())).thenReturn(mockOfflinePlayer);
         bukkitMock.when(() -> Bukkit.getPlayer(any(UUID.class))).thenReturn(playerSender);
+
+        // 4. Server createProfile logic
+        lenient().when(server.createPlayerProfile(anyString())).thenReturn(mockPlayerProfile);
+
+        // Fix for generic return type inference in Mockito
+        lenient().doReturn(CompletableFuture.completedFuture(mockPlayerProfile)).when(mockPlayerProfile).update();
+
+        lenient().when(mockPlayerProfile.getUniqueId()).thenReturn(fixedUUID);
+        lenient().when(mockPlayerProfile.getName()).thenReturn("TargetPlayer");
 
         lenient().when(plugin.getEnvironment()).thenReturn(env);
         lenient().when(env.getPlugin()).thenReturn(plugin);
@@ -122,11 +184,34 @@ class SystemIntegrationTest {
         lenient().when(env.getPlayerDataManager()).thenReturn(playerDataManager);
         lenient().when(env.getSpamManager()).thenReturn(spamManager);
 
+        lenient().when(configManager.getGeneralSettings()).thenReturn(generalSettings);
+        lenient().when(configManager.getFilterSettings()).thenReturn(filterSettings);
+        lenient().when(configManager.getAntiSpamSettings()).thenReturn(antiSpamSettings);
+        lenient().when(configManager.getSuggestionSettings()).thenReturn(suggestionSettings);
+        lenient().when(configManager.getNotificationSettings()).thenReturn(notificationSettings);
+
+        lenient().when(configManager.isFilterChat()).thenReturn(true);
+        lenient().when(configManager.isSuggestionEnabled()).thenReturn(true);
+        lenient().when(configManager.isUnicodeEnabled()).thenReturn(true);
+        lenient().when(configManager.getSuggestionCooldown()).thenReturn(0);
+        lenient().when(configManager.getSuggestionMaxWord()).thenReturn(20);
+        lenient().when(configManager.getSuggestionMaxReason()).thenReturn(100);
+        lenient().when(configManager.getEventPriority()).thenReturn(org.bukkit.event.EventPriority.HIGH);
+
+        // Ensure async executors run immediately for tests
         lenient().when(env.getAsyncExecutor()).thenReturn(Runnable::run);
 
         lenient().when(filterManager.getLoader()).thenReturn(wordLoader);
         lenient().when(storage.getAudit()).thenReturn(auditRepo);
         lenient().when(storage.getReports()).thenReturn(reportRepo);
+
+        // Fix NullPointerException by mocking getPlayerIdByNameAsync
+        lenient().when(storage.getPlayerIdByNameAsync(anyString())).thenReturn(CompletableFuture.completedFuture(-1));
+        // Default: DB does NOT find player by UUID directly (unless mocked in test)
+        lenient().when(storage.getPlayerIdAsync(any(UUID.class), anyString())).thenReturn(CompletableFuture.completedFuture(-1));
+
+        // Stub getString to avoid NPE in Map.of() when commands construct messages
+        lenient().when(messageManager.getString(anyString())).thenAnswer(invocation -> invocation.getArgument(0));
 
         lenient().when(mockConfig.contains(anyString())).thenReturn(false);
 
@@ -136,9 +221,6 @@ class SystemIntegrationTest {
         lenient().when(playerSender.hasPermission(anyString())).thenReturn(true);
         lenient().when(playerSender.getName()).thenReturn("TestPlayer");
         lenient().when(playerSender.getUniqueId()).thenReturn(UUID.randomUUID());
-
-        lenient().when(mockOfflinePlayer.getUniqueId()).thenReturn(UUID.randomUUID());
-        lenient().when(mockOfflinePlayer.getName()).thenReturn("TargetPlayer");
 
         lenient().when(scheduler.getMainThreadExecutor(any())).thenReturn(Runnable::run);
 
@@ -166,19 +248,23 @@ class SystemIntegrationTest {
         MuteCommand cmd = new MuteCommand(env);
         String targetName = "BadPlayer";
 
-        when(playerDataManager.getPlayerId(any(), any())).thenReturn(10);
+        // Fix: MuteCommand logic flows from getPlayerIdByNameAsync -> (if -1) -> PaperProfileUtil -> getPlayerIdAsync
+        // We must mock storage.getPlayerIdAsync to return a valid ID, not playerDataManager
+        when(storage.getPlayerIdAsync(any(UUID.class), anyString())).thenReturn(CompletableFuture.completedFuture(10));
 
         doAnswer(invocation -> {
-             Consumer<Boolean> callback = invocation.getArgument(6);
-             if (callback != null) callback.accept(true);
-             return null;
+            Consumer<Boolean> callback = invocation.getArgument(6);
+            if (callback != null) callback.accept(true);
+            return null;
         }).when(storage).mute(eq(10), anyString(), anyString(), anyLong(), eq("MUTE"), any(), any());
 
         cmd.execute(adminSender, new String[]{targetName, "Spamming"});
 
-        verify(messageManager).sendMessage(eq(adminSender), eq("defaults.processing"));
+        verify(server).createPlayerProfile(eq(targetName));
+        verify(mockPlayerProfile).update();
+
         verify(storage, timeout(100)).mute(eq(10), contains("Spamming"), eq("AdminUser"), eq(0L), eq("MUTE"), eq(MuteScope.CHAT), any());
-        verify(messageManager, timeout(100)).sendMessage(eq(adminSender), eq("mute-success"), anyMap());
+        verify(messageManager, timeout(100)).sendMessage(eq(adminSender), eq("moderation.mute-success"), anyMap());
     }
 
     @Test
@@ -187,17 +273,18 @@ class SystemIntegrationTest {
         TempMuteCommand cmd = new TempMuteCommand(env);
         String targetName = "TempBadPlayer";
 
-        when(playerDataManager.getPlayerId(any(), any())).thenReturn(11);
+        // Fix: Mock storage, not cache
+        when(storage.getPlayerIdAsync(any(UUID.class), anyString())).thenReturn(CompletableFuture.completedFuture(11));
 
         doAnswer(invocation -> {
-             Consumer<Boolean> callback = invocation.getArgument(6);
-             if (callback != null) callback.accept(true);
-             return null;
+            Consumer<Boolean> callback = invocation.getArgument(6);
+            if (callback != null) callback.accept(true);
+            return null;
         }).when(storage).mute(eq(11), anyString(), anyString(), anyLong(), eq("TEMPMUTE"), any(), any());
 
         cmd.execute(adminSender, new String[]{targetName, "1h", "Spam"});
 
-        verify(messageManager).sendMessage(eq(adminSender), eq("defaults.processing"));
+        verify(server).createPlayerProfile(eq(targetName));
         verify(storage, timeout(100)).mute(eq(11), contains("Spam"), eq("AdminUser"), eq(3600L), eq("TEMPMUTE"), eq(MuteScope.CHAT), any());
     }
 
@@ -211,7 +298,7 @@ class SystemIntegrationTest {
 
         cmd.execute(adminSender, new String[]{targetName, "Gross Misconduct"});
 
-        verify(messageManager).sendMessage(eq(adminSender), eq("defaults.processing"));
+        verify(server).createPlayerProfile(eq(targetName));
         verify(storage, timeout(100)).mute(eq(55), contains("Gross Misconduct"), eq("AdminUser"), eq(0L), eq("PERMUTE"), eq(MuteScope.GLOBAL), any());
     }
 
@@ -226,8 +313,9 @@ class SystemIntegrationTest {
 
         cmd.execute(adminSender, new String[]{targetName});
 
+        verify(server).createPlayerProfile(eq(targetName));
         verify(storage, timeout(100)).unmute(eq(12), eq("AdminUser"), contains("Manual"));
-        verify(messageManager, timeout(100)).sendMessage(eq(adminSender), eq("unmute-success"), anyMap());
+        verify(messageManager, timeout(100)).sendMessage(eq(adminSender), eq("moderation.unmute-success"), anyMap());
     }
 
     @Test
@@ -236,13 +324,14 @@ class SystemIntegrationTest {
         CheckMuteCommand cmd = new CheckMuteCommand(env);
         String targetName = "CheckedPlayer";
 
-        when(playerDataManager.getPlayerId(any(), any())).thenReturn(13);
+        when(storage.getPlayerIdAsync(any(), anyString())).thenReturn(CompletableFuture.completedFuture(13));
         when(storage.getMuteTimeAsync(13)).thenReturn(CompletableFuture.completedFuture(0L));
 
         cmd.execute(adminSender, new String[]{targetName});
 
+        verify(server).createPlayerProfile(eq(targetName));
         verify(storage).getMuteTimeAsync(13);
-        verify(messageManager, timeout(100)).sendMessage(eq(adminSender), eq("check-mute-true"), anyMap());
+        verify(messageManager, timeout(100)).sendMessage(eq(adminSender), eq("moderation.check-mute-true"), anyMap());
     }
 
     @Test
@@ -251,9 +340,11 @@ class SystemIntegrationTest {
         WarnCommand cmd = new WarnCommand(env);
 
         bukkitMock.when(() -> Bukkit.getPlayer("InvalidPlayer")).thenReturn(null);
+        // Ensure storage returns -1 to trigger "player-not-found"
+        when(storage.getPlayerIdAsync(any(UUID.class), anyString())).thenReturn(CompletableFuture.completedFuture(-1));
 
         cmd.execute(adminSender, new String[]{"InvalidPlayer", "Behave"});
-        verify(messageManager).sendMessage(eq(adminSender), eq("player-not-found"));
+        verify(messageManager, timeout(100)).sendMessage(eq(adminSender), eq("player-not-found"));
     }
 
     @Test
@@ -265,7 +356,7 @@ class SystemIntegrationTest {
         cmd.execute(adminSender, new String[]{"n", "badword"});
 
         verify(messageManager, never()).sendMessage(eq(adminSender), eq("no-permission"));
-        verify(messageManager, timeout(100)).sendMessage(eq(adminSender), eq("word-added"), anyMap());
+        verify(messageManager, timeout(100)).sendMessage(eq(adminSender), eq("filter.word-added"), anyMap());
     }
 
     @Test
@@ -277,7 +368,7 @@ class SystemIntegrationTest {
         cmd.execute(adminSender, new String[]{"n", "badword"});
 
         verify(wordLoader).removeWordAsync(eq("badword"), any());
-        verify(messageManager, timeout(100)).sendMessage(eq(adminSender), eq("word-removed"), anyMap());
+        verify(messageManager, timeout(100)).sendMessage(eq(adminSender), eq("filter.word-removed"), anyMap());
     }
 
     @Test
@@ -297,7 +388,7 @@ class SystemIntegrationTest {
         FilterListCommand cmd = new FilterListCommand(env);
 
         when(storage.getPendingSuggestionsAsync(1)).thenReturn(CompletableFuture.completedFuture(List.of("Suggestion 1")));
-        when(messageManager.getComponent(eq("defaults.list.suggestions"), anyMap(), eq(false)))
+        when(messageManager.getComponent(eq("suggestions.pending-suggestion"), anyMap(), eq(false)))
             .thenReturn(Component.text("Suggestions"));
 
         cmd.execute(adminSender, new String[]{"sg"});
@@ -322,7 +413,7 @@ class SystemIntegrationTest {
         cmd.execute(adminSender, new String[]{"1", "n"});
 
         verify(storage).acceptSuggestionAsync(eq(1), eq("AdminUser"), eq("n"), any());
-        verify(messageManager, timeout(100)).sendMessage(eq(adminSender), eq("action-suggest-accepted"), anyMap());
+        verify(messageManager, timeout(100)).sendMessage(eq(adminSender), eq("suggestions.action-suggest-accepted"), anyMap());
     }
 
     @Test
@@ -339,7 +430,7 @@ class SystemIntegrationTest {
         cmd.execute(adminSender, new String[]{"1"});
 
         verify(storage).denySuggestionAsync(eq(1), eq("AdminUser"), any());
-        verify(messageManager, timeout(100)).sendMessage(eq(adminSender), eq("action-suggest-rejected"));
+        verify(messageManager, timeout(100)).sendMessage(eq(adminSender), eq("suggestions.action-suggest-rejected"));
     }
 
     @Test
@@ -347,17 +438,13 @@ class SystemIntegrationTest {
     void testSuggestCommand() {
         SuggestCommand cmd = new SuggestCommand(env);
 
-        when(configManager.isUnicodeEnabled()).thenReturn(true);
-        when(configManager.getSuggestionMaxWord()).thenReturn(20);
-        when(configManager.getSuggestionMaxReason()).thenReturn(100);
-
         when(storage.getPlayerIdAsync(any(), any())).thenReturn(CompletableFuture.completedFuture(1));
         when(storage.addSuggestionAsync(eq(1), anyString(), anyString())).thenReturn(CompletableFuture.completedFuture(true));
 
         cmd.execute(playerSender, new String[]{"badword", "It is bad"});
 
         verify(storage).addSuggestionAsync(eq(1), eq("badword"), eq("It is bad"));
-        verify(messageManager, timeout(100)).sendMessage(eq(playerSender), eq("suggest-success"));
+        verify(messageManager, timeout(100)).sendMessage(eq(playerSender), eq("suggestions.suggest-success"));
     }
 
     @Test
@@ -391,14 +478,16 @@ class SystemIntegrationTest {
     void testScanCommand() {
         ScanCommand cmd = new ScanCommand(env);
         String target = "Suspect";
-        when(storage.getPlayerIdAsync(any(), eq("TargetPlayer"))).thenReturn(CompletableFuture.completedFuture(50));
+
+        when(storage.getPlayerIdAsync(any(), anyString())).thenReturn(CompletableFuture.completedFuture(50));
 
         when(storage.getPlayerReportAsync(eq(50), eq(1)))
             .thenReturn(CompletableFuture.completedFuture(List.of("Warn 1", "Mute 1")));
 
         cmd.execute(adminSender, new String[]{target});
 
-        verify(storage).getPlayerIdAsync(any(), eq("TargetPlayer"));
+        verify(server).createPlayerProfile(eq(target));
+        verify(storage).getPlayerIdAsync(any(), anyString());
         verify(adminSender, atLeastOnce()).sendMessage(any(String.class));
     }
 
@@ -409,7 +498,7 @@ class SystemIntegrationTest {
 
         cmd.execute(adminSender, new String[]{"sg", "30"});
 
-        verify(messageManager).sendMessage(eq(adminSender), eq("action-purge-start"));
+        verify(messageManager).sendMessage(eq(adminSender), eq("moderation.action-purge-start"));
         verify(storage, timeout(100)).purgeData(eq("sg"), eq(30L));
     }
 
@@ -425,7 +514,7 @@ class SystemIntegrationTest {
         cmd.execute(adminSender, new String[]{"2"});
 
         verify(adminSender, atLeastOnce()).sendMessage(any(Component.class));
-        verify(messageManager).getComponent(eq("system.help.logs"), anyMap(), eq(false));
+        verify(messageManager).getComponent(eq("help.list"), anyMap(), eq(false));
     }
 
     @Test
@@ -447,7 +536,7 @@ class SystemIntegrationTest {
         cmd.execute(adminSender, new String[]{});
 
         verify(plugin).setDebugMode(true);
-        verify(messageManager).sendMessage(eq(adminSender), eq("system.debug.general-enabled"));
+        verify(messageManager).sendMessage(eq(adminSender), eq("debug.general-enabled"));
     }
 
     @Test
@@ -467,6 +556,7 @@ class SystemIntegrationTest {
         ChatListener listener = new ChatListener(plugin);
 
         when(configManager.isFilterChat()).thenReturn(true);
+
         when(playerDataManager.getPlayerId(any(), any())).thenReturn(100);
         when(playerDataManager.getMuteInfo(100)).thenReturn(MuteInfo.NOT_MUTED);
 
@@ -490,6 +580,6 @@ class SystemIntegrationTest {
             eq("bad")
         );
 
-        verify(messageManager).sendMessage(eq(playerSender), eq("notify-blocked"), anyMap());
+        verify(messageManager).sendMessage(eq(playerSender), eq("notification.blocked"), anyMap());
     }
 }

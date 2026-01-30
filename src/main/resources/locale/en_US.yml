@@ -1,0 +1,184 @@
+# ==============================================================================
+# SPARKWORD MESSAGES v1.0.1
+# ==============================================================================
+prefix: "[<reset><gradient:#09bbf5:#FFFFFF>SparkWord</gradient><white>] "
+  
+# ==============================================================================
+# GENERIC
+# ==============================================================================
+reload: "Configuration and messages reloaded."
+no-permission: "<red>You do not have permission to execute this command."
+player-not-found: "<red>Player not found or offline."
+error-player-only: "<red>This command is only for players."
+error-register-player: "<red>Could not register or find player data."
+error-command-length: "<red>Command too long. Please shorten your message."
+error-db-error: "<red>A database error occurred."
+error-invalid-page: "<red>Invalid page number."
+error-invalid-time: "<red>Invalid duration format (e.g. 1d, 12h, 30m)."
+error-invalid-days: "<red>Invalid day count."
+error-negative: "<red>Days cannot be negative."
+error-invalid-id: "<red>Invalid ID provided."
+error-id-not-found: "<red>Entry with that ID not found."
+
+# ==============================================================================
+# COMMAND HELP DESCRIPTIONS
+# ==============================================================================
+help:
+  info: "/sw info <gray>[page] <white>- Plugin information"
+  debug: "/sw-debug <gray>[filter] <white>- Toggle debug modes"
+  reload: "/sw reload <white>- Reload configuration"
+  purge: "/sw purge <gray><type> <days> <white>- Purge database records"
+  logs: "/sw logs <gray>[type] [page] <white>- View violation logs"
+  audit: "/sw audit <gray>[player] <white>- View staff audit logs"
+  accept: "/sw accept <gray><id> <list> <white>- Accept suggestion"
+  deny: "/sw deny <gray><id> <white>- Deny suggestion"
+  add: "/sw add <gray><list> <word> <white>- Add word to filter"
+  remove: "/sw remove <gray><list> <word> <white>- Remove word from filter"
+  list: "/sw list <gray>[type] <white>- List filters (n, s, wc, sg)"
+  mute: "/sw-mute <gray><player> [reason] <white>- Permanently mute"
+  permute: "/sw-permute <gray><player> [reason] <white>- Perm mute (Total Block)"
+  tempmute: "/sw-tempmute <gray><player> <time> [reason] <white>- Temporarily mute"
+  unmute: "/sw-unmute <gray><player> <white>- Unmute a player"
+  warn: "/sw-warn <gray><player> <reason> <white>- Warn a player"
+  checkmute: "/sw-checkmute <gray><player> <white>- Check active mutes"
+  scan: "/sw-scan <gray><player> [page] <white>- View player history"
+  suggest: "/sw-sg <gray><word> [reason] <white>- Suggest a word filter"
+  footer-next: "Type /sw info {page} for more."
+  
+# ==============================================================================
+# COMMAND USAGE
+# ==============================================================================
+  usage-purge: "<red>Usage: /sw purge <sg|b|a|all> <days>"
+  usage-accept: "<red>Usage: /sw accept <id> <n|s|wc>"
+  usage-deny: "<red>Usage: /sw deny <id>"
+  usage-add: "<red>Usage: /sw add <n|s|wc> <word>"
+  usage-remove: "<red>Usage: /sw remove <n|s|wc> <word>"
+  usage-list: "<red>Usage: /sw list <n|s|wc|sg> [page]"
+  usage-mute: "<red>Usage: /sw-mute <player> [reason]"  
+  usage-permute: "<red>Usage: /sw-permute <player> [reason]"
+  usage-tempmute: "<red>Usage: /sw-tempmute <player> <time> [reason]"
+  usage-unmute: "<red>Usage: /sw-unmute <player>"
+  usage-warn: "<red>Usage: /sw-warn <player> <reason>"
+  usage-checkmute: "<red>Usage: /sw-checkmute <player>"
+  usage-scan: "<red>Usage: /sw-scan <player> [page]"
+  suggest-usage: "<red>Usage: /sw-sg <word> <reason>"
+
+# ==============================================================================
+# FILTER & LISTS
+# ==============================================================================
+filter:
+  exists: "<red>That word already exists in the list."
+  word-added: "Word added to list <gray>{list}<white>."
+  word-removed: "Word removed from list <gray>{list}<white>."
+  word-not-found: "<red>Word not found in the specified list."
+  list-empty: "<gray>This list is empty."
+
+# ==============================================================================
+# MODERATION
+# ==============================================================================
+moderation:
+  mute-success: "Mute applied to <gray>{player} <#09bbf5>| <white>length: {time}"
+  unmute-success: "The player has been unmuted. <gray>{player}<white>."
+  check-mute-true: "<red>{player} is muted for {time}."
+  check-mute-false: "{player} is not muted."
+  player-muted: "<gray>{staff} <red>has <gray>{time} <red>muted you. Reason: <white>{reason}"
+  player-permuted: "<red>You cannot interact with this while you are globally muted."
+  warn-sent: "Warned <gray>{player}<white>."
+  warn-receive: "<red>WARNING RECEIVED <white>Staff: <gray>{staff} <white>Reason: <gray>{reason}"
+  action-purge-start: "<gray>Starting purge task..."
+  action-purge-complete: "Purge complete. Deleted <gray>{count} <white>entries."
+  scan-empty: "<gray>No recent violations found."
+  default:
+    mute: "permanently"
+    temp: "temporarily"
+    perm: "globally"
+    no-reason: "No reason"
+  
+# ==============================================================================
+# LOGS & AUDIT
+# ==============================================================================
+logs:
+  viewer:
+    no-records: "<gray>No records found."
+    hover-source-book: "<gray>Source: <white>Book"
+    hover-content-book: "<gray>Book Content:"
+    hover-censor-book: "<red>Detected: {detected}"
+    hover-flood: "<#09bbf5>Flood History:"
+
+audit:
+  hover-reason: "<gray> [Reason]"
+  format:
+    base: "<gray>[{date}] <#09bbf5>{staff}<gray>: "
+    actions:
+      mute: "<red>MUTE <gray>{player}"
+      permute: "<dark_red>PERMUTE <gray>{player}"
+      tempmute: "<red>TEMPMUTE <gray>{player}"
+      unmute: "UNMUTE <gray>{player}"
+      warn: "WARN <gray>{player}"
+      purge: "<gray>PURGE <white>Type: {type} | Days: {days}"
+      accept: "ACCEPT <gray>{word} ({list})"
+      deny: "<red>DENY <gray>{word}"
+      api-mute: "<red>API_MUTE <gray>{player}"
+      default: "{action} <gray>- {detail}"
+
+# ==============================================================================
+# SUGGESTIONS
+# ==============================================================================
+suggestions:
+  disabled: "<red>Suggestions are currently disabled."
+  pending-suggestion: "Pending Suggestions"
+  suggest-success: "Suggestion sent to staff. Thank you!"
+  suggest-exists: "<red>That word is already pending suggestion."
+  action-suggest-accepted: "Accepted suggestion for word: <gray>{word}"
+  action-suggest-rejected: "<gray>Suggestion rejected."
+  suggest-accept: "Your suggestion for <gray>{word} <white>was accepted by <gray>{staff}<white>."
+  suggest-deny: "<red>Your suggestion for <gray>{word} <red>was denied by <gray>{staff}<red>."
+  suggest-cooldown: "<red>Please wait {time}s before suggesting again."
+  first-long-suggestion: "<red>Word exceeds limit of {limit} characters."
+  second-long-suggestion: "<red>Reason exceeds limit of {limit} characters."
+
+# ==============================================================================
+# PREVENTION & NOTIFICATIONS
+# ==============================================================================
+book:
+  limit-open: "<red>Please wait {time}s before opening books again."
+  limit-pages: "<red>Book contains too many pages."
+  limit-complexity: "<red>Book content is too complex."
+  evidence-title: "<red>Evidence: <white>{player}"
+  author-name: "<#09bbf5>SparkWord System"
+
+spam:
+  chars: "<red>Please do not spam characters."
+  repeat: "<red>Please do not repeat messages."
+  flood: "<red>Please slow down."
+  digits: "<red>Too many numbers in message."
+  ip: "<red>Advertising is not allowed."
+  ip-split: "<red>Suspicious pattern detected."
+  injection: "<red>Illegal syntax detected."
+  caps: "<red>Please do not abuse CAPS."
+  evasion: "Evasion Detected"
+  
+notification:
+  staff-suggest: "[<yellow>Suggest<white>] <gray>{player} <white>-> <gray>{suggest} <white>({reason})"
+  blocked: "<red>Message blocked: {reason}"
+  alert: "[<red>ALERT<white>] <gray>{player} "
+  icon-symbol: "⚠"
+  spy-hover:
+    matches: "<red>Matches: <white>{matches}"
+    original: "<gray>Original: <white>{original}"
+  details:
+    title: "<#09bbf5>Violation Details"
+    type: "<gray>Type: <white>{type}"
+    source: "<gray>Source: <white>{source}"
+    detected: "<gray>Detected: <red>{detected}"
+    evidence-click: "Here is the evidence (Click)"
+    evidence-error: "<red>Error: Evidence expired."
+
+# ==============================================================================
+# DEBUG
+# ==============================================================================
+debug:
+  general-enabled: "Debug general enabled"
+  general-disabled: "Debug general enabled"
+  filter-enabled: "Debug filter enabled"
+  filter-disabled: "Debug filter enabled."

@@ -18,9 +18,9 @@
 package com.sparkword.benchmark;
 
 import com.sparkword.SparkWord;
-import com.sparkword.storage.SQLiteConnectionPool;
-import com.sparkword.storage.executor.StorageExecutors;
 import com.sparkword.util.BenchmarkReporter;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -37,15 +37,19 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class StorageStressTest {
 
-    @TempDir Path tempDir;
-    private SQLiteConnectionPool connectionPool;
-    private StorageExecutors executors;
+    @TempDir
+    Path tempDir;
+    private HikariDataSource dataSource;
+    private ExecutorService writer;
+    private ExecutorService reader;
     private SparkWord pluginMock;
 
     @BeforeEach
@@ -53,9 +57,13 @@ public class StorageStressTest {
         pluginMock = mock(SparkWord.class);
         when(pluginMock.getDataFolder()).thenReturn(tempDir.toFile());
 
-        connectionPool = new SQLiteConnectionPool(pluginMock);
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl("jdbc:sqlite:" + tempDir.resolve("stress_storage.db"));
+        config.setDriverClassName("org.sqlite.JDBC");
+        config.setMaximumPoolSize(4);
+        dataSource = new HikariDataSource(config);
 
-        try (Connection conn = connectionPool.getConnection();
+        try (Connection conn = dataSource.getConnection();
              Statement stmt = conn.createStatement()) {
 
             stmt.execute("PRAGMA journal_mode=WAL;");
@@ -64,17 +72,19 @@ public class StorageStressTest {
             stmt.execute("CREATE TABLE IF NOT EXISTS stress_test (id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT, created_at LONG)");
         }
 
-        executors = new StorageExecutors();
+        writer = Executors.newSingleThreadExecutor();
+        reader = Executors.newFixedThreadPool(4);
     }
 
     @AfterEach
     public void tearDown() {
-        if (connectionPool != null) connectionPool.close();
-        if (executors != null) executors.shutdown();
+        if (dataSource != null) dataSource.close();
+        if (writer != null) writer.shutdown();
+        if (reader != null) reader.shutdown();
     }
 
     @Test
-    @DisplayName("Benchmark: Solo Escrituras (Heavy Write Load)")
+    @DisplayName("Benchmark: Write Only (Heavy Write Load)")
     public void testWriteOnlyPerformance() {
         int operations = 5_000;
         ConcurrentLinkedQueue<Long> latencies = new ConcurrentLinkedQueue<>();
@@ -85,7 +95,7 @@ public class StorageStressTest {
         for (int i = 0; i < operations; i++) {
             futures.add(CompletableFuture.runAsync(() -> {
                 long start = System.nanoTime();
-                try (Connection conn = connectionPool.getConnection();
+                try (Connection conn = dataSource.getConnection();
                      PreparedStatement ps = conn.prepareStatement("INSERT INTO stress_test (data, created_at) VALUES (?, ?)")) {
                     ps.setString(1, "payload-" + System.nanoTime());
                     ps.setLong(2, System.currentTimeMillis());
@@ -94,7 +104,7 @@ public class StorageStressTest {
                     e.printStackTrace();
                 }
                 latencies.add(System.nanoTime() - start);
-            }, executors.writer));
+            }, writer));
         }
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
@@ -104,16 +114,17 @@ public class StorageStressTest {
     }
 
     @Test
-    @DisplayName("Benchmark: Carga Mixta (80% Lectura / 20% Escritura)")
+    @DisplayName("Benchmark: Mixed Load (80% Read / 20% Write)")
     public void testMixedWorkload() {
         int operations = 10_000;
         ConcurrentLinkedQueue<Long> latencies = new ConcurrentLinkedQueue<>();
         List<CompletableFuture<?>> futures = new ArrayList<>();
         Random random = new Random();
 
-        try (Connection conn = connectionPool.getConnection(); Statement stmt = conn.createStatement()) {
+        try (Connection conn = dataSource.getConnection(); Statement stmt = conn.createStatement()) {
             stmt.execute("INSERT INTO stress_test (data) VALUES ('seed-data')");
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
 
         long globalStart = System.currentTimeMillis();
 
@@ -122,7 +133,7 @@ public class StorageStressTest {
 
             Runnable task = () -> {
                 long start = System.nanoTime();
-                try (Connection conn = connectionPool.getConnection()) {
+                try (Connection conn = dataSource.getConnection()) {
                     if (isWrite) {
                         try (PreparedStatement ps = conn.prepareStatement("INSERT INTO stress_test (data) VALUES (?)")) {
                             ps.setString(1, "data");
@@ -133,12 +144,14 @@ public class StorageStressTest {
                             ps.executeQuery();
                         }
                     }
-                } catch (Exception e) { e.printStackTrace(); }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 latencies.add(System.nanoTime() - start);
             };
 
-            if (isWrite) futures.add(CompletableFuture.runAsync(task, executors.writer));
-            else futures.add(CompletableFuture.runAsync(task, executors.reader));
+            if (isWrite) futures.add(CompletableFuture.runAsync(task, writer));
+            else futures.add(CompletableFuture.runAsync(task, reader));
         }
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
@@ -159,7 +172,7 @@ public class StorageStressTest {
         BenchmarkReporter.log(testName, "p99_latency", p99 / 1000, "us");
 
         if (p99 > 200_000_000) {
-            BenchmarkReporter.alert(testName, "Disco Lento detectado (>200ms en escritura)");
+            BenchmarkReporter.alert(testName, "Slow Disk detected (>200ms on write)");
         }
     }
 }

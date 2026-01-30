@@ -17,12 +17,14 @@
  */
 package com.sparkword.filters;
 
+import com.sparkword.Environment;
 import com.sparkword.SparkWord;
 import com.sparkword.core.ConfigManager;
-import com.sparkword.core.Environment;
-import com.sparkword.filters.word.WordFilterMode;
-import com.sparkword.filters.word.loader.WordListLoader;
-import com.sparkword.filters.word.result.FilterResult;
+import com.sparkword.core.config.FilterSettings;
+import com.sparkword.moderation.filters.FilterManager;
+import com.sparkword.moderation.filters.word.WordFilterMode;
+import com.sparkword.moderation.filters.word.loader.WordListLoader;
+import com.sparkword.moderation.filters.word.result.FilterResult;
 import com.sparkword.util.BenchmarkReporter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -43,10 +45,16 @@ import static org.mockito.Mockito.when;
 
 class FilterManagerConcurrencyTest {
 
-    @Mock private SparkWord plugin;
-    @Mock private Environment environment;
-    @Mock private ConfigManager configManager;
-    @Mock private WordListLoader wordListLoader;
+    @Mock
+    private SparkWord plugin;
+    @Mock
+    private Environment environment;
+    @Mock
+    private ConfigManager configManager;
+    @Mock
+    private FilterSettings filterSettings;
+    @Mock
+    private WordListLoader wordListLoader;
     private FilterManager filterManager;
 
     @BeforeEach
@@ -55,8 +63,11 @@ class FilterManagerConcurrencyTest {
         when(plugin.getEnvironment()).thenReturn(environment);
         when(plugin.getLogger()).thenReturn(Logger.getGlobal());
         when(environment.getConfigManager()).thenReturn(configManager);
-        when(configManager.isUnicodeEnabled()).thenReturn(false);
-        when(configManager.getGlobalReplacement()).thenReturn("****");
+
+        when(configManager.getFilterSettings()).thenReturn(filterSettings);
+        when(filterSettings.isUnicodeEnabled()).thenReturn(false);
+        when(filterSettings.getGlobalReplacement()).thenReturn("****");
+
         filterManager = new FilterManager(plugin, wordListLoader);
     }
 

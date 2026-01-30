@@ -29,7 +29,9 @@ public final class TimeUtil {
         .withLocale(Locale.getDefault())
         .withZone(ZoneId.systemDefault());
 
-    private TimeUtil() { throw new UnsupportedOperationException("Utility class"); }
+    private TimeUtil() {
+        throw new UnsupportedOperationException("Utility class");
+    }
 
     public static String formatShortDate(long millis) {
         return SHORT_DATE.format(Instant.ofEpochMilli(millis));
@@ -49,7 +51,9 @@ public final class TimeUtil {
                 case 'h' -> multiplier = 3600;
                 case 'm' -> multiplier = 60;
                 case 's' -> multiplier = 1;
-                default -> { return -1; }
+                default -> {
+                    return -1;
+                }
             }
         }
 

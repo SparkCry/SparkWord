@@ -17,9 +17,9 @@
  */
 package com.sparkword.commands.impl.suggest;
 
+import com.sparkword.Environment;
 import com.sparkword.commands.SubCommand;
-import com.sparkword.core.Environment;
-import com.sparkword.filters.word.WordFilterMode;
+import com.sparkword.moderation.filters.word.WordFilterMode;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -28,16 +28,19 @@ import java.util.Map;
 
 public class AcceptCommand implements SubCommand {
     private final Environment env;
-    public AcceptCommand(Environment env) { this.env = env; }
+
+    public AcceptCommand(Environment env) {
+        this.env = env;
+    }
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
         if (!sender.hasPermission("sparkword.accept")) {
-             env.getMessageManager().sendMessage(sender, "no-permission");
-             return true;
+            env.getMessageManager().sendMessage(sender, "no-permission");
+            return true;
         }
         if (args.length < 2) {
-            env.getMessageManager().sendMessage(sender, "usage-accept");
+            env.getMessageManager().sendMessage(sender, "help.usage-accept");
             return true;
         }
 
@@ -56,7 +59,7 @@ public class AcceptCommand implements SubCommand {
         else if (type.equals("wc")) mode = WordFilterMode.WRITE_COMMAND;
         else if (type.equals("n")) mode = WordFilterMode.NORMAL;
         else {
-            env.getMessageManager().sendMessage(sender, "usage-accept");
+            env.getMessageManager().sendMessage(sender, "help.usage-accept");
             return true;
         }
 
@@ -68,16 +71,16 @@ public class AcceptCommand implements SubCommand {
 
                 env.getFilterManager().addWordHotSwap(info.word(), fMode).thenAccept(success -> {
                     Bukkit.getScheduler().runTask(env.getPlugin(), () -> {
-                        env.getMessageManager().sendMessage(sender, "action-suggest-accepted", Map.of("word", info.word()));
+                        env.getMessageManager().sendMessage(sender, "suggestions.action-suggest-accepted", Map.of("word", info.word()));
 
                         Player suggester = Bukkit.getPlayer(info.playerUUID());
                         if (suggester != null && suggester.isOnline()) {
-                            env.getMessageManager().sendMessage(suggester, "suggest-accept", Map.of("word", info.word(), "staff", staffName));
+                            env.getMessageManager().sendMessage(suggester, "suggestions.suggest-accept", Map.of("word", info.word(), "staff", staffName));
                         }
                     });
                 });
             } else {
-                 Bukkit.getScheduler().runTask(env.getPlugin(), () -> env.getMessageManager().sendMessage(sender, "error-id-not-found"));
+                Bukkit.getScheduler().runTask(env.getPlugin(), () -> env.getMessageManager().sendMessage(sender, "error-id-not-found"));
             }
         });
 

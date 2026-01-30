@@ -49,7 +49,7 @@ graph TD
 
 1. **Requirements:**
 * Java 21 or higher (Project `pom.xml` properties).
-* Paper 1.21.x server (Dependencies include `io.papermc.paper:paper-api:1.21.1-R0.1`).
+* Paper 1.21.x server (Dependencies include `io.papermc.paper:paper-api:1.21-R0.1`).
 
 
 2. **Build:**

@@ -1,0 +1,189 @@
+# ==============================================================================
+#  SparkWord Moderation v1.1.0
+# ==============================================================================
+#  System Filter Settings
+#  Core toggles for specific filtering algorithms.
+# ==============================================================================
+system-filter:
+  # Checks for Unicode/Special characters that are not standard Latin.
+  # Normalizes text to detect evasion attempts.
+  unicode: true
+
+  # Checks for "Zalgo" text (excessive combining characters).
+  # Blocks text that extends vertically to disrupt chat.
+  zalgo: true
+
+  # Heuristic detection for domain names and links.
+  # Detects patterns like "(dot)com", "[dot]", etc.
+  domain: true
+
+  # Detects IPv4 addresses in chat (e.g., 192.168.1.1).
+  ip: true
+
+# ==============================================================================
+#  Filter Sources
+#  Determines which game events are processed by the filter.
+# ==============================================================================
+filter-sources:
+  # Filter public chat messages.
+  chat: true
+
+  # Filter text on signs when placed or edited.
+  signs: true
+
+  # Filter content written in books.
+  books: true
+
+  # Filter text entered in Anvil rename fields.
+  anvils: true
+
+# ==============================================================================
+#  Replacement Settings
+#  Controls how blocked words are handled in chat/components.
+# ==============================================================================
+replacement:
+  # If true, blocked words are replaced with the string below.
+  # If false, the entire message/action is blocked and cancelled.
+  enabled: true
+
+  # The replacement string for filtered words.
+  # Supports MiniMessage formats (e.g. <red>***</red>).
+  replace: "****"
+
+# ==============================================================================
+#  Notifications
+#  Settings for alerting staff members about violations.
+# ==============================================================================
+notifications:
+  # Adds a hoverable icon [⚠] to chat messages for staff with permission.
+  # Hovering shows raw details or original text.
+  icon-hover:
+    enabled: true
+
+  # Toggles specific notification categories for staff alerts.
+  types:
+    filter: true
+    flood: true
+    ip: true
+    zalgo: true
+    injection: true
+
+# ==============================================================================
+#  Anti-Spam Modules
+#  Configuration for the heuristic spam prevention engine.
+# ==============================================================================
+anti-spam:
+  # Master toggle for all anti-spam checks.
+  enabled: true
+
+  # ----------------------------------------------------------------------------
+  #  Anti-Flood
+  #  Prevents players from sending messages too quickly.
+  # ----------------------------------------------------------------------------
+  anti-flood:
+    enabled: true
+
+    # How many messages are allowed within the delay period.
+    messages: 4
+
+    # The time window (seconds) for the message limit.
+    delay: 2
+
+    # Auto-punishment duration if flood is detected.
+    # Format: 15m, 1h, etc. Set to 0s to disable auto-mute.
+    mute: "15m"
+
+  # ----------------------------------------------------------------------------
+  #  Anti-Injection
+  #  Sanitizes input to prevent exploit attempts.
+  # ----------------------------------------------------------------------------
+  anti-injection:
+    enabled: true
+
+    # Detects and escapes MiniMessage tags (e.g. <red>, <click>).
+    # Prevents players from coloring chat or creating fake click events.
+    tags: true
+
+    # Escapes PlaceholderAPI placeholders (e.g. %server_ram%).
+    # Prevents players from revealing server info.
+    papi: true
+
+  # ----------------------------------------------------------------------------
+  #  Anti-Repeat
+  #  Prevents repeating the same or similar messages.
+  # ----------------------------------------------------------------------------
+  anti-repeat:
+    enabled: true
+
+    # Similarity percentage (0-100) to consider a message a repeat.
+    # Higher = stricter (must be more identical).
+    similarity: 80
+
+    # How many previous messages to compare against.
+    max-history: 2
+    
+    cooldown: 3s
+  # ----------------------------------------------------------------------------
+  #  Caps Limit
+  #  Limits excessive use of UPPERCASE letters.
+  # ----------------------------------------------------------------------------
+  caps-limit:
+    # Note: If enabled, messages exceeding the limit are lowercased, not blocked.
+    enabled: true
+
+    # Maximum number of uppercase characters allowed in a message.
+    limit: 15
+
+  # ----------------------------------------------------------------------------
+  #  Character Spam
+  #  Limits repetition of single characters (e.g. "Heeeeeeey").
+  # ----------------------------------------------------------------------------
+  character-spam:
+    enabled: true
+
+    # Max consecutive identical characters allowed (e.g. 'aaaaa').
+    char-limit: 5
+
+    # Max times a word can be repeated in a sentence.
+    word-limit: 3
+
+  # ----------------------------------------------------------------------------
+  #  IP Split Detection
+  #  Advanced check for IPs split across multiple lines (Signs/Books).
+  # ----------------------------------------------------------------------------
+  ip-split-detection:
+    enabled: true
+
+    # Auto-punishment duration if IP splitting is detected.
+    # Defaults to a 30-minute global permute (interaction block).
+    mute: "30m"
+
+  # ----------------------------------------------------------------------------
+  #  Digit Limits
+  #  Limits the amount of numbers allowed in text.
+  # ----------------------------------------------------------------------------
+  digits-max-limit:
+    # Max digits allowed in chat. 0 = disabled.
+    chat-inputs: 7
+
+    # Max digits allowed in writable items (books/signs). 0 = disabled.
+    writable-inputs: 7
+
+  # ----------------------------------------------------------------------------
+  #  Book Limits
+  #  Prevents book exploits and chunk ban attempts.
+  # ----------------------------------------------------------------------------
+  book-limits:
+    # Maximum pages allowed in a book.
+    max-pages: 30
+
+    # Maximum characters allowed per page.
+    max-chars-per-page: 256
+
+    # Cooldown (seconds) between opening books (prevents packet spam).
+    open-delay: 2
+
+    # Global server-wide limit for book edits per second.
+    global-rate-limit: 20
+
+

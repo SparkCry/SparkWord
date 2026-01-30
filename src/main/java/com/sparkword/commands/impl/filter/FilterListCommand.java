@@ -17,9 +17,9 @@
  */
 package com.sparkword.commands.impl.filter;
 
+import com.sparkword.Environment;
 import com.sparkword.commands.SubCommand;
-import com.sparkword.core.Environment;
-import com.sparkword.filters.word.WordFilterMode;
+import com.sparkword.moderation.filters.word.WordFilterMode;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -28,12 +28,14 @@ import org.bukkit.command.CommandSender;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 public class FilterListCommand implements SubCommand {
     private final Environment env;
-    public FilterListCommand(Environment env) { this.env = env; }
+
+    public FilterListCommand(Environment env) {
+        this.env = env;
+    }
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
@@ -54,7 +56,7 @@ public class FilterListCommand implements SubCommand {
             Set<String> wordsSet = env.getFilterManager().getList(mode);
 
             if (wordsSet == null || wordsSet.isEmpty()) {
-                env.getMessageManager().sendMessage(sender, "list-empty");
+                env.getMessageManager().sendMessage(sender, "filter.list-empty");
                 return true;
             }
 
@@ -82,21 +84,21 @@ public class FilterListCommand implements SubCommand {
             env.getStorage().getPendingSuggestionsAsync(fPage).thenAccept(list -> {
                 org.bukkit.Bukkit.getScheduler().runTask(env.getPlugin(), () -> {
 
-                    Component suggestionsTitle = env.getMessageManager().getComponent("defaults.list.suggestions", Collections.emptyMap(), false);
+                    Component suggestionsTitle = env.getMessageManager().getComponent("suggestions.pending-suggestion", Collections.emptyMap(), false);
                     String titleStr = MiniMessage.miniMessage().serialize(suggestionsTitle);
 
                     sender.sendMessage(MiniMessage.miniMessage().deserialize(
                         "<dark_gray>--- <#09bbf5>" + titleStr + " (Page " + fPage + ")</#09bbf5> <dark_gray>---"
                     ));
 
-                    if (list.isEmpty()) env.getMessageManager().sendMessage(sender, "list-empty");
-                    else for(String str : list) sender.sendMessage(Component.text(str, NamedTextColor.YELLOW));
+                    if (list.isEmpty()) env.getMessageManager().sendMessage(sender, "filter.list-empty");
+                    else for (String str : list) sender.sendMessage(Component.text(str, NamedTextColor.YELLOW));
                 });
             });
             return true;
         }
 
-        env.getMessageManager().sendMessage(sender, "usage-list");
+        env.getMessageManager().sendMessage(sender, "help.usage-list");
         return true;
     }
 }

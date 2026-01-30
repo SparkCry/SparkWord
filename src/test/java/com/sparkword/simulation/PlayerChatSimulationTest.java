@@ -17,15 +17,21 @@
  */
 package com.sparkword.simulation;
 
+import com.sparkword.Environment;
 import com.sparkword.SparkWord;
-import com.sparkword.core.*;
-import com.sparkword.filters.FilterManager;
-import com.sparkword.filters.word.WordFilterMode;
-import com.sparkword.filters.word.loader.WordListLoader;
-import com.sparkword.listeners.ChatListener;
-import com.sparkword.model.MuteInfo;
-import com.sparkword.spammers.SpamManager;
-import com.sparkword.spammers.SpamManager.SpamResult;
+import com.sparkword.core.ConfigManager;
+import com.sparkword.core.MessageManager;
+import com.sparkword.core.NotifyManager;
+import com.sparkword.core.config.FilterSettings;
+import com.sparkword.core.config.NotificationSettings;
+import com.sparkword.core.storage.PlayerDataManager;
+import com.sparkword.core.storage.model.MuteInfo;
+import com.sparkword.moderation.antispam.SpamManager;
+import com.sparkword.moderation.antispam.SpamManager.SpamResult;
+import com.sparkword.moderation.filters.FilterManager;
+import com.sparkword.moderation.filters.word.WordFilterMode;
+import com.sparkword.moderation.filters.word.loader.WordListLoader;
+import com.sparkword.moderation.listeners.ChatListener;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
@@ -48,16 +54,31 @@ import static org.mockito.Mockito.*;
 
 class PlayerChatSimulationTest {
 
-    @Mock private SparkWord plugin;
-    @Mock private Environment environment;
-    @Mock private ConfigManager configManager;
-    @Mock private PlayerDataManager playerDataManager;
-    @Mock private NotifyManager notifyManager;
-    @Mock private MessageManager messageManager;
-    @Mock private SpamManager spamManager;
-    @Mock private WordListLoader wordLoader;
-    @Mock private Player player;
-    @Mock private AsyncChatEvent chatEvent;
+    @Mock
+    private SparkWord plugin;
+    @Mock
+    private Environment environment;
+    @Mock
+    private ConfigManager configManager;
+    @Mock
+    private PlayerDataManager playerDataManager;
+    @Mock
+    private NotifyManager notifyManager;
+    @Mock
+    private MessageManager messageManager;
+    @Mock
+    private SpamManager spamManager;
+    @Mock
+    private WordListLoader wordLoader;
+    @Mock
+    private Player player;
+    @Mock
+    private AsyncChatEvent chatEvent;
+
+    @Mock
+    private FilterSettings filterSettings;
+    @Mock
+    private NotificationSettings notificationSettings;
 
     private FilterManager filterManager;
     private ChatListener chatListener;
@@ -81,15 +102,19 @@ class PlayerChatSimulationTest {
         when(wordLoader.loadWords(eq(WordFilterMode.STRONG))).thenReturn(Collections.emptySet());
         when(wordLoader.loadWords(eq(WordFilterMode.WRITE_COMMAND))).thenReturn(Collections.emptySet());
 
-        filterManager = new FilterManager(plugin, wordLoader);
-        filterManager.loadFilters().join();
-
-        when(environment.getFilterManager()).thenReturn(filterManager);
+        when(configManager.getFilterSettings()).thenReturn(filterSettings);
+        when(configManager.getNotificationSettings()).thenReturn(notificationSettings);
 
         when(configManager.isFilterChat()).thenReturn(true);
         when(configManager.isUnicodeEnabled()).thenReturn(true);
         when(configManager.isReplacementEnabled()).thenReturn(false);
         when(configManager.getGlobalReplacement()).thenReturn("****");
+        when(configManager.isNotifyIconEnabled()).thenReturn(true);
+
+        filterManager = new FilterManager(plugin, wordLoader);
+        filterManager.loadFilters().join();
+
+        when(environment.getFilterManager()).thenReturn(filterManager);
 
         when(player.getUniqueId()).thenReturn(UUID.randomUUID());
         when(player.getName()).thenReturn("TestPlayer");
@@ -110,7 +135,7 @@ class PlayerChatSimulationTest {
     }
 
     @Test
-    @DisplayName("Simulación: 'v4c4' bloqueado (Debe cancelar evento)")
+    @DisplayName("Simulation: 'v4c4' blocked (Must cancel event)")
     void testLeetspeakEvasionInGame() {
         String dirtyMessage = "Hola v4c4";
         when(chatEvent.message()).thenReturn(Component.text(dirtyMessage));
@@ -123,9 +148,9 @@ class PlayerChatSimulationTest {
     }
 
     @Test
-    @DisplayName("Simulación: 'vácá' bloqueado (Debe cancelar evento)")
+    @DisplayName("Simulation: 'vácá' blocked (Must cancel event)")
     void testAccentEvasionInGame() {
-        String dirtyMessage = "Esa vácá es grande";
+        String dirtyMessage = "That vácá is big";
         when(chatEvent.message()).thenReturn(Component.text(dirtyMessage));
 
         chatListener.onPlayerChat(chatEvent);
