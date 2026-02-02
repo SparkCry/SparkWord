@@ -64,6 +64,24 @@ suggestion:
   max-reason-length: 100
 
 # ==============================================================================
+#  Notifications
+#  Settings for alerting staff members about violations.
+# ==============================================================================
+notifications:
+  # Adds a hoverable icon [⚠] to chat messages for staff with permission.
+  # Hovering shows raw details or original text.
+  icon-hover:
+    enabled: true
+
+  # Toggles specific notification categories for staff alerts.
+  types:
+    filter: true
+    flood: true
+    ip: true
+    zalgo: true
+    injection: true
+
+# ==============================================================================
 #  Punishment Presets
 #  Shortcuts used in mute commands (e.g. /mute <player> tox).
 #  Key is the preset name, Value is the reason text.

@@ -59,10 +59,10 @@ public class ConfigManager {
         this.generalSettings.load(mainConfig);
         this.storageSettings.load(mainConfig);
         this.suggestionSettings.load(mainConfig);
+        this.notificationSettings.load(mainConfig);
 
         this.filterSettings.load(moderationConfig);
         this.antiSpamSettings.load(moderationConfig);
-        this.notificationSettings.load(moderationConfig);
 
         // Apply runtime changes
         plugin.setDebugMode(this.generalSettings.isDebugMode());

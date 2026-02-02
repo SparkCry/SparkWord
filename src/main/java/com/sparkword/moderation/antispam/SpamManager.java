@@ -24,6 +24,7 @@ import com.sparkword.core.config.AntiSpamSettings;
 import com.sparkword.core.config.FilterSettings;
 import com.sparkword.core.storage.StorageManager;
 import com.sparkword.core.storage.model.MuteInfo;
+import com.sparkword.moderation.antispam.antiflood.AtomicTokenBucket;
 import com.sparkword.moderation.antispam.checks.*;
 import com.sparkword.moderation.antispam.security.InputSanitizer;
 import com.sparkword.util.TimeUtil;
@@ -80,7 +81,7 @@ public class SpamManager {
         for (SpamCheck check : activeChecks) {
             if (check instanceof AntiFloodCheck f) f.reload();
             if (check instanceof CharSpamCheck c) c.reload();
-            // Other checks pull config dynamically in their check() method
+
         }
     }
 
@@ -104,7 +105,8 @@ public class SpamManager {
         String muteTimeStr = plugin.getConfig().getString(configPath, defaultTime);
         long muteSeconds = TimeUtil.parseDuration(muteTimeStr);
 
-        if (muteSeconds > 0 || (type == PunishmentType.PERMUTE && muteSeconds == 0)) {
+        // Fixed: Allow muteSeconds == 0 (Permanent) for PunishmentType.MUTE as well.
+        if (muteSeconds >= 0) {
             int cachedId = plugin.getEnvironment().getPlayerDataManager().getPlayerId(p.getUniqueId(), p.getName());
 
             if (cachedId != -1) {
@@ -138,7 +140,7 @@ public class SpamManager {
     }
 
     public SpamResult checkSpam(Player player, String message, String source, boolean isWritable, Location signLocation, int lineIndex, boolean checkTraffic) {
-        // CHANGED: Use modular settings
+
         AntiSpamSettings spamSettings = plugin.getEnvironment().getConfigManager().getAntiSpamSettings();
         FilterSettings filterSettings = plugin.getEnvironment().getConfigManager().getFilterSettings();
 

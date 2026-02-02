@@ -26,7 +26,6 @@ public record PlayerViolation(int id, Type type, String reason, String staff, lo
         String prefix = switch (type) {
             case WARN -> "§e[WARN]";
             case MUTE -> "§c[MUTE]";
-            case BLOCK -> "§8[BLOCK]";
         };
 
         return String.format("%s §7%s (%s): %s", prefix, date, staff, reason);
@@ -35,6 +34,5 @@ public record PlayerViolation(int id, Type type, String reason, String staff, lo
     public enum Type {
         WARN,
         MUTE,
-        BLOCK
     }
 }

@@ -19,3 +19,13 @@
 - Added built-in locales: `en_US`, `es_LA`, `pt_BR`, `de_DE`, `nl_NL`.
 - Introduced `anti-spam.anti-repeat.cooldown` to control repeated-word cooldowns.
 - Added MySQL and MariaDB support to the storage system.
+
+## Version 1.1.1 — Anti-flood fixed
+**Release date:** 2026-02-02
+
+### Changed
+- 'notifications' module moved from moderation.yml to config.yml
+- Redundant code removed
+
+### Fixed
+- Anti-flood was not detecting
