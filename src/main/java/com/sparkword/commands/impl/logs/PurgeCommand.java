@@ -46,6 +46,7 @@ public class PurgeCommand implements SubCommand {
         else if (type.equals("w")) perm = "sparkword.purge.warning";
         else if (type.equals("m")) perm = "sparkword.purge.mute";
         else if (type.equals("a")) perm = "sparkword.purge.audit";
+        else if (type.equals("hp")) perm = "sparkword.purge.history";
 
         if (!sender.hasPermission(perm)) {
             env.getMessageManager().sendMessage(sender, "no-permission");

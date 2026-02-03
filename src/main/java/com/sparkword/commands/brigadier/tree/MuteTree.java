@@ -49,22 +49,22 @@ public class MuteTree implements BrigadierNode {
 
         if (cmdName.equals("sw-tempmute")) {
             playerArg.then(Commands.argument("time", StringArgumentType.word())
-                .suggests(BrigadierUtils::suggestDurations)
-                .executes(ctx -> run(manager, ctx, cmdName, StringArgumentType.getString(ctx, "player"), StringArgumentType.getString(ctx, "time")))
-                .then(Commands.argument("reason", StringArgumentType.greedyString())
-                    .executes(ctx -> run(manager, ctx, cmdName, StringArgumentType.getString(ctx, "player"), StringArgumentType.getString(ctx, "time"), StringArgumentType.getString(ctx, "reason")))
-                )
-            );
+                    .suggests(BrigadierUtils::suggestDurations)
+                    .executes(ctx -> run(manager, ctx, cmdName, StringArgumentType.getString(ctx, "player"), StringArgumentType.getString(ctx, "time")))
+                    .then(Commands.argument("reason", StringArgumentType.greedyString())
+                            .suggests(BrigadierUtils::suggestPresets)
+                            .executes(ctx -> run(manager, ctx, cmdName, StringArgumentType.getString(ctx, "player"), StringArgumentType.getString(ctx, "time"), StringArgumentType.getString(ctx, "reason")))
+                         )
+                          );
         } else if (!cmdName.equals("sw-checkmute") && !cmdName.equals("sw-unmute")) {
             playerArg.then(Commands.argument("reason", StringArgumentType.greedyString())
-                .suggests(BrigadierUtils::suggestPresets)
-                .executes(ctx -> run(manager, ctx, cmdName, StringArgumentType.getString(ctx, "player"), StringArgumentType.getString(ctx, "reason")))
-            );
+                    .suggests(BrigadierUtils::suggestPresets)
+                    .executes(ctx -> run(manager, ctx, cmdName, StringArgumentType.getString(ctx, "player"), StringArgumentType.getString(ctx, "reason")))
+                          );
         }
 
         builder.then(playerArg);
 
-        // Fix: Build node first, then register, then store in registry
         LiteralCommandNode<CommandSourceStack> node = builder.build();
         commands.register(node, "SparkWord " + cmdName, Collections.emptyList());
         registry.put(cmdName, node);

@@ -85,8 +85,8 @@ public class AntiFloodCheck implements SpamCheck {
         }
 
         AtomicTokenBucket bucket = floodBuckets.get(uuid, k ->
-            new AtomicTokenBucket(cachedCapacity, cachedRefillRate)
-        );
+                new AtomicTokenBucket(cachedCapacity, cachedRefillRate)
+                                                   );
 
         if (!bucket.tryConsume()) {
             plugin.getSpamManager().triggerAutoMute(
@@ -95,7 +95,7 @@ public class AntiFloodCheck implements SpamCheck {
                 "15m",
                 "Anti-Flood Auto Mute",
                 PunishmentType.MUTE
-            );
+                                                   );
 
             String floodContext = String.join(" | ", history);
             history.clear();

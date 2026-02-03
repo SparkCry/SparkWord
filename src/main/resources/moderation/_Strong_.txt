@@ -1,0 +1,8 @@
+# Strong: Applies aggressive matching, blocking terms regardless
+# of whether they appear as substrings within larger words.
+
+motherfucker
+malparido
+vollidiot
+klootzak
+desgraçado

@@ -39,7 +39,6 @@ public class AntiRepeatCheck implements SpamCheck {
     public AntiRepeatCheck(SparkWord plugin) {
         this.plugin = plugin;
         this.historyCache = Caffeine.newBuilder()
-            // Increased expiration to ensure long cooldowns persist in cache
             .expireAfterAccess(Duration.ofHours(1))
             .maximumSize(2000)
             .build();
@@ -60,7 +59,6 @@ public class AntiRepeatCheck implements SpamCheck {
         long now = System.currentTimeMillis();
         int similarityThreshold = plugin.getEnvironment().getConfigManager().getRepeatSimilarity();
         int maxRepeats = Math.max(1, plugin.getEnvironment().getConfigManager().getRepeatHistorySize());
-        // Cooldown is now parsed as seconds from TimeUtil
         long cooldownSec = Math.max(1, plugin.getEnvironment().getConfigManager().getRepeatCooldown());
 
         synchronized (history) {
@@ -71,7 +69,6 @@ public class AntiRepeatCheck implements SpamCheck {
             while (it.hasNext()) {
                 MessageStat stat = it.next();
 
-                // Strict check first
                 if (stat.content.equalsIgnoreCase(cleanMsg)) {
                     match = stat;
                     matchScore = 100.0;
@@ -79,7 +76,6 @@ public class AntiRepeatCheck implements SpamCheck {
                     break;
                 }
 
-                // Similarity check
                 double similarity = calculateSimilarity(cleanMsg, stat.content);
                 if (similarity >= similarityThreshold) {
                     match = stat;
@@ -94,16 +90,11 @@ public class AntiRepeatCheck implements SpamCheck {
             }
 
             if (match != null) {
-                // 1. Check if currently blocked
                 if (match.blockedUntil > now) {
-                    // Put back at top (fresh interaction)
                     history.messages.addFirst(match);
                     return SpamResult.BLOCKED_WITH_REASON("spam.repeat", false);
                 }
 
-                // 2. Cooldown expired OR Time decay logic
-                // If block expired, reset count.
-                // OR if it wasn't blocked but last message was ages ago (e.g. > 45 seconds), reset count.
                 long timeSinceLast = now - match.lastSeen;
                 boolean shouldReset = (match.blockedUntil != 0 && match.blockedUntil <= now)
                     || (timeSinceLast > (cooldownSec * 1000L + 30000L));
@@ -124,10 +115,9 @@ public class AntiRepeatCheck implements SpamCheck {
                     plugin.getLogger().info("[AntiRepeat] Count: " + match.count + " / Limit: " + maxRepeats);
                 }
 
-                // 3. Trigger Block if count EXCEEDS limit
                 if (match.count > maxRepeats) {
                     match.blockedUntil = now + (cooldownSec * 1000L);
-                    match.count = 0; // Reset count so next valid msg starts fresh after cooldown
+                    match.count = 0;
 
                     if (plugin.isDebugMode())
                         plugin.getLogger().info("[AntiRepeat] Blocking '" + match.content + "' until " + match.blockedUntil);
@@ -136,7 +126,6 @@ public class AntiRepeatCheck implements SpamCheck {
                 }
 
             } else {
-                // New distinct message
                 if (plugin.isDebugMode()) plugin.getLogger().info("[AntiRepeat] New message: " + cleanMsg);
 
                 MessageStat newStat = new MessageStat(cleanMsg, now);

@@ -27,82 +27,79 @@ import io.papermc.paper.command.brigadier.Commands;
 public class FilterTree {
 
     public static void attachSubCommands(LiteralArgumentBuilder<CommandSourceStack> swNode, CommandManager manager) {
-        // Add
         swNode.then(Commands.literal("add").requires(s -> s.getSender().hasPermission("sparkword.add"))
-            .executes(ctx -> {
-                manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "add");
-                return 1;
-            })
-            .then(Commands.argument("list", StringArgumentType.word())
-                .suggests((ctx, b) -> {
-                    b.suggest("n");
-                    b.suggest("s");
-                    b.suggest("wc");
-                    return b.buildFuture();
-                })
                 .executes(ctx -> {
-                    manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "add", StringArgumentType.getString(ctx, "list"));
+                    manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "add");
                     return 1;
                 })
-                .then(Commands.argument("word", StringArgumentType.greedyString())
-                    .executes(ctx -> {
-                        manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "add", StringArgumentType.getString(ctx, "list"), StringArgumentType.getString(ctx, "word"));
-                        return 1;
-                    })
-                )
-            )
-        );
+                .then(Commands.argument("list", StringArgumentType.word())
+                        .suggests((ctx, b) -> {
+                            b.suggest("n");
+                            b.suggest("s");
+                            b.suggest("wc");
+                            return b.buildFuture();
+                        })
+                        .executes(ctx -> {
+                            manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "add", StringArgumentType.getString(ctx, "list"));
+                            return 1;
+                        })
+                        .then(Commands.argument("word", StringArgumentType.greedyString())
+                                .executes(ctx -> {
+                                    manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "add", StringArgumentType.getString(ctx, "list"), StringArgumentType.getString(ctx, "word"));
+                                    return 1;
+                                })
+                             )
+                     )
+                   );
 
-        // Remove
         swNode.then(Commands.literal("remove").requires(s -> s.getSender().hasPermission("sparkword.remove"))
-            .executes(ctx -> {
-                manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "remove");
-                return 1;
-            })
-            .then(Commands.argument("list", StringArgumentType.word())
-                .suggests((ctx, b) -> {
-                    b.suggest("n");
-                    b.suggest("s");
-                    b.suggest("wc");
-                    return b.buildFuture();
-                })
                 .executes(ctx -> {
-                    manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "remove", StringArgumentType.getString(ctx, "list"));
+                    manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "remove");
                     return 1;
                 })
-                .then(Commands.argument("word", StringArgumentType.greedyString())
-                    .executes(ctx -> {
-                        manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "remove", StringArgumentType.getString(ctx, "list"), StringArgumentType.getString(ctx, "word"));
-                        return 1;
-                    })
-                )
-            )
-        );
+                .then(Commands.argument("list", StringArgumentType.word())
+                        .suggests((ctx, b) -> {
+                            b.suggest("n");
+                            b.suggest("s");
+                            b.suggest("wc");
+                            return b.buildFuture();
+                        })
+                        .executes(ctx -> {
+                            manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "remove", StringArgumentType.getString(ctx, "list"));
+                            return 1;
+                        })
+                        .then(Commands.argument("word", StringArgumentType.greedyString())
+                                .executes(ctx -> {
+                                    manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "remove", StringArgumentType.getString(ctx, "list"), StringArgumentType.getString(ctx, "word"));
+                                    return 1;
+                                })
+                             )
+                     )
+                   );
 
-        // List
         swNode.then(Commands.literal("list").requires(s -> s.getSender().hasPermission("sparkword.list"))
-            .executes(ctx -> {
-                manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "list");
-                return 1;
-            })
-            .then(Commands.argument("type", StringArgumentType.word())
-                .suggests((ctx, b) -> {
-                    b.suggest("n");
-                    b.suggest("s");
-                    b.suggest("wc");
-                    b.suggest("sg");
-                    return b.buildFuture();
-                })
                 .executes(ctx -> {
-                    manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "list", StringArgumentType.getString(ctx, "type"));
+                    manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "list");
                     return 1;
                 })
-                .then(Commands.argument("page", IntegerArgumentType.integer(1))
-                    .executes(ctx -> {
-                        manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "list", StringArgumentType.getString(ctx, "type"), String.valueOf(IntegerArgumentType.getInteger(ctx, "page")));
-                        return 1;
-                    }))
-            )
-        );
+                .then(Commands.argument("type", StringArgumentType.word())
+                        .suggests((ctx, b) -> {
+                            b.suggest("n");
+                            b.suggest("s");
+                            b.suggest("wc");
+                            b.suggest("sg");
+                            return b.buildFuture();
+                        })
+                        .executes(ctx -> {
+                            manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "list", StringArgumentType.getString(ctx, "type"));
+                            return 1;
+                        })
+                        .then(Commands.argument("page", IntegerArgumentType.integer(1))
+                            .executes(ctx -> {
+                                manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "list", StringArgumentType.getString(ctx, "type"), String.valueOf(IntegerArgumentType.getInteger(ctx, "page")));
+                                return 1;
+                            }))
+                     )
+                   );
     }
 }

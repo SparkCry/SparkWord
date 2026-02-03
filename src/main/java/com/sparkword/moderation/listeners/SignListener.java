@@ -113,7 +113,7 @@ public class SignListener implements Listener {
 
             SpamResult spamResult = plugin.getEnvironment().getSpamManager().checkSpam(
                 player, plainLine, "Sign", true, event.getBlock().getLocation(), i, true
-            );
+                                                                                      );
 
             if (spamResult.blocked()) {
                 event.setCancelled(true);

@@ -20,13 +20,12 @@ package com.sparkword.core.lifecycle;
 import com.sparkword.SparkWord;
 import com.sparkword.core.storage.StorageManager;
 import org.bukkit.Bukkit;
-import org.bukkit.scheduler.BukkitTask;
 
 public class MaintenanceTasks {
 
     private final SparkWord plugin;
     private final StorageManager storage;
-    private BukkitTask purgeTask;
+    private boolean hasRunStartupPurge = false;
 
     public MaintenanceTasks(SparkWord plugin, StorageManager storage) {
         this.plugin = plugin;
@@ -34,26 +33,36 @@ public class MaintenanceTasks {
     }
 
     public void startPurgeTask() {
-        stopPurgeTask();
+        if (hasRunStartupPurge) {
+            return;
+        }
+        hasRunStartupPurge = true;
 
         long purgeHours = plugin.getConfig().getInt("suggestion.purge-hours", 72);
-        if (purgeHours > 0 && storage != null) {
-            this.purgeTask = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin,
-                () -> storage.purgeData("sg", purgeHours / 24),
-                1200L,
-                72000L
-            );
+
+        int historyDays = plugin.getEnvironment().getConfigManager().getGeneralSettings().getHistoryPlayerDays();
+
+        if ((purgeHours > 0 || historyDays > 0) && storage != null) {
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                int totalDeleted = 0;
+
+                if (purgeHours > 0) {
+                    totalDeleted += storage.purgeData("sg", purgeHours / 24);
+                }
+                if (historyDays > 0) {
+                    totalDeleted += storage.purgeData("hp", historyDays);
+                }
+
+                if (plugin.isDebugMode() && totalDeleted > 0) {
+                    plugin.getLogger().info("Startup purge complete. Removed " + totalDeleted + " expired records.");
+                }
+            });
         }
     }
 
     public void stopPurgeTask() {
-        if (purgeTask != null && !purgeTask.isCancelled()) {
-            purgeTask.cancel();
-            purgeTask = null;
-        }
     }
 
     public void stopAll() {
-        stopPurgeTask();
     }
 }

@@ -17,6 +17,9 @@
  */
 package com.sparkword.moderation.filters.word;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 public enum WordFilterMode {
 
     STRONG,
@@ -25,11 +28,12 @@ public enum WordFilterMode {
 
     WRITE_COMMAND;
 
-    public String getFileName() {
+    @Contract(pure = true)
+    public @NotNull String getFileName() {
         return switch (this) {
-            case STRONG -> "Strong.txt";
-            case WRITE_COMMAND -> "WriteCommand.txt";
-            default -> "Normal.txt";
+            case STRONG -> "_Strong_.txt";
+            case WRITE_COMMAND -> "_WriteCommand_.txt";
+            default -> "_Normal_.txt";
         };
     }
 }

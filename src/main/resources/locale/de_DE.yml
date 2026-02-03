@@ -2,7 +2,7 @@
 # SPARKWORD NACHRICHTEN v1.0.1
 # ==============================================================================
 prefix: "[<reset><gradient:#09bbf5:#FFFFFF>SparkWord</gradient><white>] "
-  
+
 # ==============================================================================
 # ALLGEMEIN
 # ==============================================================================
@@ -44,7 +44,7 @@ help:
   scan: "/sw-scan <gray><Spieler> [Seite] <white>- Spielerverlauf ansehen"
   suggest: "/sw-sg <gray><Wort> [Grund] <white>- Wortfilter vorschlagen"
   footer-next: "Tippe /sw info {page} für mehr."
-  
+
 # ==============================================================================
 # BEFEHL VERWENDUNG
 # ==============================================================================
@@ -54,7 +54,7 @@ help:
   usage-add: "<red>Verwendung: /sw add <n|s|wc> <Wort>"
   usage-remove: "<red>Verwendung: /sw remove <n|s|wc> <Wort>"
   usage-list: "<red>Verwendung: /sw list <n|s|wc|sg> [Seite]"
-  usage-mute: "<red>Verwendung: /sw-mute <Spieler> [Grund]"  
+  usage-mute: "<red>Verwendung: /sw-mute <Spieler> [Grund]"
   usage-permute: "<red>Verwendung: /sw-permute <Spieler> [Grund]"
   usage-tempmute: "<red>Verwendung: /sw-tempmute <Spieler> <Zeit> [Grund]"
   usage-unmute: "<red>Verwendung: /sw-unmute <Spieler>"
@@ -90,10 +90,9 @@ moderation:
   scan-empty: "<gray>Keine kürzlichen Verstöße gefunden."
   default:
     mute: "permanent"
-    temp: "temporär"
     perm: "global"
     no-reason: "Kein Grund"
-  
+
 # ==============================================================================
 # LOGS & AUDIT
 # ==============================================================================
@@ -157,7 +156,7 @@ spam:
   injection: "<red>Illegale Syntax erkannt."
   caps: "<red>Bitte missbrauche keine GROSSBUCHSTABEN."
   evasion: "Umgehung erkannt"
-  
+
 notification:
   staff-suggest: "[<yellow>Vorschlag<white>] <gray>{player} <white>-> <gray>{suggest} <white>({reason})"
   blocked: "<red>Nachricht blockiert: {reason}"

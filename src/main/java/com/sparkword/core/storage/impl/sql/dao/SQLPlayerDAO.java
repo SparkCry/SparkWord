@@ -103,7 +103,6 @@ public class SQLPlayerDAO extends AbstractSQLDAO implements PlayerDAO {
                 ps.setString(2, name);
                 ps.setLong(3, now);
             } else {
-                // SQLite
                 ps.setString(1, uuid.toString());
                 ps.setString(2, uuid.toString());
                 ps.setString(3, name);

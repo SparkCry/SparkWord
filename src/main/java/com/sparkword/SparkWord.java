@@ -52,8 +52,7 @@ public final class SparkWord extends JavaPlugin {
 
             if (!getDataFolder().exists()) getDataFolder().mkdirs();
 
-            // Resource generation logic
-            saveDefaultConfig(); // saves config.yml
+            saveDefaultConfig();
 
             File modFile = new File(getDataFolder(), "moderation.yml");
             if (!modFile.exists()) saveResource("moderation.yml", false);
@@ -61,7 +60,6 @@ public final class SparkWord extends JavaPlugin {
             File commandsFile = new File(getDataFolder(), "commands.yml");
             if (!commandsFile.exists()) saveResource("commands.yml", false);
 
-            // Handle locale folder
             File localeFolder = new File(getDataFolder(), "locale");
             if (!localeFolder.exists()) localeFolder.mkdirs();
 
@@ -99,7 +97,7 @@ public final class SparkWord extends JavaPlugin {
 
     public void reload() {
         try {
-            reloadConfig(); // reloads config.yml from disk
+            reloadConfig();
             if (environment != null) {
                 environment.reload();
             }
@@ -113,7 +111,7 @@ public final class SparkWord extends JavaPlugin {
     public void log(String message) {
         Bukkit.getConsoleSender().sendMessage(MiniMessage.miniMessage().deserialize(
             "<#09bbf5>[SparkWord]</#09bbf5> <reset>" + message
-        ));
+                                                                                   ));
     }
 
     private void printBanner() {

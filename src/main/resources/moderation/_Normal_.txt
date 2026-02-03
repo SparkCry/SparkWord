@@ -1,0 +1,8 @@
+# Normal: Performs partial word blocking, matching standalone orcontextual
+# terms (e.g., blocking "ass" withoutaffecting "class" or "assignment").
+
+ass
+culo
+arm
+lul
+puta

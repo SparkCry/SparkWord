@@ -31,7 +31,7 @@ public class IPCheck implements SpamCheck {
 
     private static final Pattern IP_PATTERN = Pattern.compile(
         "(?<![0-9])((?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))(?![0-9])"
-    );
+                                                             );
     private final SparkWord plugin;
 
     public IPCheck(SparkWord plugin) {
@@ -53,7 +53,7 @@ public class IPCheck implements SpamCheck {
                 "Anti-Ip",
                 message,
                 matcher.group(1)
-            );
+                                                                  );
             return SpamResult.BLOCKED_WITH_REASON("spam.ip", false);
         }
 

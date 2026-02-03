@@ -64,7 +64,7 @@ public class SQLConnectionFactory {
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl("jdbc:sqlite:" + file.getPath());
         config.setDriverClassName("org.sqlite.JDBC");
-        config.setMaximumPoolSize(1); // SQLite supports only 1 writer, safe to keep pool strictly serialized
+        config.setMaximumPoolSize(1);
         config.setPoolName("SparkWord-SQLite");
 
         config.addDataSourceProperty("journal_mode", "WAL");

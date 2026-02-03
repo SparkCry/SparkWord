@@ -31,7 +31,6 @@ import java.util.regex.Pattern;
 public class ClientBrandHandler implements Listener, PluginMessageListener {
 
     private final SparkWord plugin;
-    // Merged from SecurityManager: pattern to sanitize brand names
     private final Pattern CLEAN_BRAND = Pattern.compile("[^a-zA-Z0-9_\\-: ]");
 
     public ClientBrandHandler(SparkWord plugin) {
@@ -46,7 +45,6 @@ public class ClientBrandHandler implements Listener, PluginMessageListener {
             String rawBrand = new String(message, StandardCharsets.UTF_8).trim();
             String processedBrand = sanitizeBrand(player, rawBrand);
 
-            // Store the processed brand in PlayerDataManager
             if (plugin.getEnvironment().getPlayerDataManager() != null) {
                 plugin.getEnvironment().getPlayerDataManager().setClientBrand(player.getUniqueId(), processedBrand);
             }
@@ -56,34 +54,24 @@ public class ClientBrandHandler implements Listener, PluginMessageListener {
         }
     }
 
-    /**
-     * Logic previously found in SecurityManager.
-     * Validates and cleans the brand string.
-     */
     private String sanitizeBrand(Player player, String brand) {
         if (brand == null) return "Unknown";
 
-        // Remove special characters to prevent chat breaking or log injection
         String normalized = CLEAN_BRAND.matcher(brand).replaceAll("");
         String check = normalized.toLowerCase().trim();
 
-        // Heuristic checks
         if (check.length() > 20 || check.length() < 2) {
-            // We store it as "Unknown" or a safe fallback if it looks suspicious
             if (plugin.isDebugMode()) {
                 plugin.getLogger().warning("[Heuristic] Suspicious Brand (" + player.getName() + "): " + brand);
             }
             return "Unknown";
         }
 
-        // Return the clean, normalized string
         return normalized;
     }
 
-    // Optional: Ensure vanilla players are marked if no packet is received (though usually they send "vanilla")
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
-        // Default to vanilla/unknown until the packet arrives (usually milliseconds after join)
         if (plugin.getEnvironment().getPlayerDataManager() != null) {
             plugin.getEnvironment().getPlayerDataManager().setClientBrand(event.getPlayer().getUniqueId(), "vanilla");
         }

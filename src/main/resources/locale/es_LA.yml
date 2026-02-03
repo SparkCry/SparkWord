@@ -2,7 +2,7 @@
 # SPARKWORD MENSAJES v1.0.1
 # ==============================================================================
 prefix: "[<reset><gradient:#09bbf5:#FFFFFF>SparkWord</gradient><white>] "
-  
+
 # ==============================================================================
 # GENÉRICO
 # ==============================================================================
@@ -44,7 +44,7 @@ help:
   scan: "/sw-scan <gray><jugador> [página] <white>- Ver historial del jugador"
   suggest: "/sw-sg <gray><palabra> [razón] <white>- Sugerir un filtro de palabra"
   footer-next: "Escribe /sw info {page} para más."
-  
+
 # ==============================================================================
 # USO DE COMANDOS
 # ==============================================================================
@@ -54,7 +54,7 @@ help:
   usage-add: "<red>Uso: /sw add <n|s|wc> <palabra>"
   usage-remove: "<red>Uso: /sw remove <n|s|wc> <palabra>"
   usage-list: "<red>Uso: /sw list <n|s|wc|sg> [página]"
-  usage-mute: "<red>Uso: /sw-mute <jugador> [razón]"  
+  usage-mute: "<red>Uso: /sw-mute <jugador> [razón]"
   usage-permute: "<red>Uso: /sw-permute <jugador> [razón]"
   usage-tempmute: "<red>Uso: /sw-tempmute <jugador> <tiempo> [razón]"
   usage-unmute: "<red>Uso: /sw-unmute <jugador>"
@@ -90,10 +90,9 @@ moderation:
   scan-empty: "<gray>No se encontraron violaciones recientes."
   default:
     mute: "permanentemente"
-    temp: "temporalmente"
     perm: "globalmente"
     no-reason: "Sin razón"
-  
+
 # ==============================================================================
 # REGISTROS Y AUDITORÍA
 # ==============================================================================
@@ -157,7 +156,7 @@ spam:
   injection: "<red>Sintaxis ilegal detectada."
   caps: "<red>Por favor, no abuses de las MAYÚSCULAS."
   evasion: "Evasión Detectada"
-  
+
 notification:
   staff-suggest: "[<yellow>Sugerir<white>] <gray>{player} <white>-> <gray>{suggest} <white>({reason})"
   blocked: "<red>Mensaje bloqueado: {reason}"

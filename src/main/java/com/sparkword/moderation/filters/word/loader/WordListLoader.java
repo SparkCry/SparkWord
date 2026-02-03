@@ -42,27 +42,30 @@ public class WordListLoader {
 
     public WordListLoader(SparkWord plugin) {
         this.plugin = plugin;
-        this.folder = new File(plugin.getDataFolder(), "words");
-        if (!folder.exists()) folder.mkdirs();
+        this.folder = new File(plugin.getDataFolder(), "moderation");
+
+        if (!folder.exists()) {
+            folder.mkdirs();
+        }
 
         for (WordFilterMode mode : WordFilterMode.values()) {
-            createIfNotExists(mode.getFileName(), "# List " + mode.name());
+            ensureResourceExists(mode.getFileName());
         }
     }
 
-    private void createIfNotExists(String name, String header) {
+    private void ensureResourceExists(String name) {
         File file = new File(folder, name);
-        if (!file.exists()) {
-            try {
-                file.createNewFile();
-                Files.write(file.toPath(), List.of(header), StandardCharsets.UTF_8);
-            } catch (IOException e) {
-                plugin.getLogger().severe("Error creating " + name);
-            }
+        if (file.exists()) return;
+
+        try {
+            plugin.saveResource("moderation/" + name, false);
+        } catch (Exception ignored) {
         }
     }
 
     public Set<String> loadWords(WordFilterMode mode) {
+        ensureResourceExists(mode.getFileName());
+
         File file = new File(folder, mode.getFileName());
         if (!file.exists()) return Collections.emptySet();
 
@@ -75,7 +78,7 @@ public class WordListLoader {
                 .filter(word -> !word.isEmpty())
                 .collect(Collectors.toSet());
         } catch (IOException e) {
-            plugin.getLogger().warning("Error loading list: " + mode.name());
+            plugin.getLogger().warning("Error reading list: " + mode.name());
             return Collections.emptySet();
         } finally {
             lock.readLock().unlock();
@@ -87,7 +90,10 @@ public class WordListLoader {
             File file = new File(folder, mode.getFileName());
             lock.writeLock().lock();
             try {
-
+                if (!file.exists()) {
+                    if (file.getParentFile() != null) file.getParentFile().mkdirs();
+                    file.createNewFile();
+                }
                 Files.write(file.toPath(), List.of(word), StandardCharsets.UTF_8, StandardOpenOption.APPEND);
                 return true;
             } catch (IOException e) {
@@ -102,14 +108,16 @@ public class WordListLoader {
     public CompletableFuture<Boolean> removeWordAsync(String word, WordFilterMode mode) {
         return CompletableFuture.supplyAsync(() -> {
             File file = new File(folder, mode.getFileName());
+            if (!file.exists()) return false;
+
             String target = TextNormalizer.normalizeForSearch(word);
 
             lock.writeLock().lock();
             try {
                 List<String> lines = Files.readAllLines(file.toPath(), StandardCharsets.UTF_8);
                 boolean removed = lines.removeIf(line ->
-                    TextNormalizer.normalizeForSearch(line).equals(target) || line.trim().equalsIgnoreCase(word)
-                );
+                        TextNormalizer.normalizeForSearch(line).equals(target) || line.trim().equalsIgnoreCase(word)
+                                                );
 
                 if (removed) {
                     Files.write(file.toPath(), lines, StandardCharsets.UTF_8, StandardOpenOption.TRUNCATE_EXISTING);

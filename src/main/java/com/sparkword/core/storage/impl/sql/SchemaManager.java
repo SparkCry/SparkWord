@@ -43,6 +43,7 @@ public class SchemaManager {
             stmt.execute(queryAdapter.getTableCreationQuery("suggestion"));
             stmt.execute(queryAdapter.getTableCreationQuery("warnings"));
             stmt.execute(queryAdapter.getTableCreationQuery("muted"));
+            stmt.execute(queryAdapter.getTableCreationQuery("mute_history"));
             stmt.execute(queryAdapter.getTableCreationQuery("audit"));
             stmt.execute(queryAdapter.getTableCreationQuery("monitor_logs"));
 
@@ -62,6 +63,11 @@ public class SchemaManager {
 
         try {
             stmt.execute("CREATE INDEX IF NOT EXISTS idx_warnings_player ON warnings(player_id)");
+        } catch (SQLException ignored) {
+        }
+
+        try {
+            stmt.execute("CREATE INDEX IF NOT EXISTS idx_mute_history_player ON mute_history(player_id)");
         } catch (SQLException ignored) {
         }
 

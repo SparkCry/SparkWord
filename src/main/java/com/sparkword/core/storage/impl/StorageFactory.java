@@ -33,7 +33,6 @@ public class StorageFactory {
     }
 
     public StorageProvider createProvider(ConfigManager config) {
-        // Use the new modular settings object
         StorageSettings settings = config.getStorageSettings();
         String type = settings.getStorageType();
 

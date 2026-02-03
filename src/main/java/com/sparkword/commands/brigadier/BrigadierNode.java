@@ -28,7 +28,6 @@ import java.util.Map;
 
 public interface BrigadierNode {
 
-    // Updated to accept a registry map for alias redirection
     void register(Commands commands, CommandManager manager, Environment env, Map<String, LiteralCommandNode<CommandSourceStack>> nodeRegistry);
 
     default int run(CommandManager manager, CommandContext<CommandSourceStack> ctx, String label, String... args) {

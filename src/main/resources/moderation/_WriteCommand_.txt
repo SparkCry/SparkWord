@@ -1,0 +1,5 @@
+# WriteCommand: Designed to prevent the use of administrator or staff names within
+# writable commandssuch as /rename, /tag, /nickname, and similar features.
+
+SparkCry
+Your_Nick

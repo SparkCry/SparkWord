@@ -28,12 +28,5 @@ public interface PlayerDAO {
 
     CompletableFuture<String> getPlayerNameAsync(int id);
 
-    /**
-     * Attempts to find a player ID by name from the database.
-     * Useful for executing commands on offline players who are already registered.
-     *
-     * @param name The username to search for (case-insensitive).
-     * @return A future containing the ID, or -1 if not found.
-     */
     CompletableFuture<Integer> getPlayerIdByNameAsync(String name);
 }

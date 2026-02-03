@@ -17,25 +17,13 @@
  */
 package com.sparkword.core.storage.impl.sql.query;
 
-/**
- * Strategy interface to handle SQL dialect differences (SQLite vs MySQL/MariaDB).
- */
 public interface QueryAdapter {
 
-    /**
-     * Returns the query for inserting or updating a player (Upsert).
-     * MySQL: INSERT ... ON DUPLICATE KEY UPDATE
-     * SQLite: INSERT OR REPLACE / UPDATE
-     */
     String getPlayerUpsertQuery();
 
-    /**
-     * Returns the query for inserting or updating a mute.
-     */
     String getMuteUpsertQuery();
 
-    /**
-     * Returns the query to create tables (handling AUTOINCREMENT syntax differences).
-     */
+    String getMuteHistoryInsertQuery();
+
     String getTableCreationQuery(String tableName);
 }

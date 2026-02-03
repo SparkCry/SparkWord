@@ -71,10 +71,12 @@ The plugin initializes configuration via `ConfigManager.java` [src/main/java/com
 
 | File | Purpose | Location |
 | --- | --- | --- |
-| `config.yml` | Feature toggles, limits, and behavior settings. | `plugin.getDataFolder()/config.yml` |
-| `messages.yml` | Localization strings. | `plugin.getDataFolder()/messages.yml` |
+| `config.yml` | General settings, database connection, language selection. | `plugin.getDataFolder()/config.yml` |
+| `moderation.yml` | Filter toggles, anti-spam thresholds, and rule settings. | `plugin.getDataFolder()/moderation.yml` |
+| `messages.yml` | Localization strings. | `plugin.getDataFolder()/locale/en_US.yml` |
 | `commands.yml` | Command alias mapping. | `plugin.getDataFolder()/commands.yml` |
-| `words/*.txt` | Filter lists (Normal, Strong, WriteCommand). | `plugin.getDataFolder()/words/` |
+| `security-filters.yml` | Domain whitelists/blacklists and TLD settings. | `plugin.getDataFolder()/moderation/security-filters.yml` |
+| `_*.txt` | Filter lists (Normal, Strong, WriteCommand). | `plugin.getDataFolder()/moderation/` |
 
 ### Key Flags (Runtime)
 
@@ -195,6 +197,12 @@ Source: `src/main/java/com/sparkword/commands/CommandManager.java`
 | `sparkword.bypass.sign` | Bypasses sign filtering. | `SignListener.java` |
 | `sparkword.bypass.symbol.all` | Bypasses Unicode/Zalgo checks. | `FilterManager.java` |
 | `sparkword.bypass.writecommands` | Bypasses command spam/filter checks. | `CommandListener.java` |
+| `sparkword.purge.logs` | Allows purging monitor logs. | `PurgeCommand.java` |
+| `sparkword.purge.suggest` | Allows purging suggestion data. | `PurgeCommand.java` |
+| `sparkword.purge.warning` | Allows purging warning history. | `PurgeCommand.java` |
+| `sparkword.purge.mute` | Allows purging active mutes. | `PurgeCommand.java` |
+| `sparkword.purge.audit` | Allows purging audit logs. | `PurgeCommand.java` |
+| `sparkword.purge.history` | Allows purging mute history. | `PurgeCommand.java` |
 
 ---
 
@@ -208,10 +216,16 @@ Source: `src/main/java/com/sparkword/commands/CommandManager.java`
   * Checks if text contains blocked words using currently loaded filters.
 
 * `boolean isClean(String text, Player player)`
-  * Same as above, but accounts for player bypass permissions.
+  * Checks text accounting for specific player permissions (e.g., bypasses).
+
+* `boolean isCleanForCommand(String text)`
+  * Checks text specifically against the `WRITE_COMMAND` filter list.
 
 * `String filterText(String text)`
-  * Returns the text with profanity replaced by the configured replacement string.
+  * Returns the text with profanity replaced by the configured global replacement.
+
+* `String filterText(String text, Player player)`
+  * Returns filtered text, respecting specific player bypass permissions.
 
 * `Component filterComponent(Component text, Player player)`
   * Filters a Paper API Component.
@@ -227,19 +241,20 @@ The plugin listens to standard Paper events. It does not currently expose custom
 
 ## Data Storage
 
-**System:** SQLite
-**File:** `database/data.db` (created in plugin folder)
+**System:** SQLite, MySQL, or MariaDB
+**File (SQLite):** `database/data.db`
 **Pool:** HikariCP
-**Implementation:** `SQLiteStorage.java` [src/main/java/com/sparkword/core/SQLiteStorage.java]
+**Implementation:** `StorageManager.java` / `StorageProvider.java` [src/main/java/com/sparkword/core/storage/StorageManager.java]
 
 ### Tables
 
-1. `players`: UUID/Name mapping.
-2. `muted`: Active and past mutes.
-3. `warnings`: Player warnings.
-4. `monitor_logs`: Chat violations and spam blocks.
-5. `audit`: Staff actions (ban/mute/purge logs).
-6. `suggestions`: User-submitted word suggestions.
+1. `players`: UUID/Name mapping and last seen cache.
+2. `muted`: Active mutes.
+3. `mute_history`: Expired or revoked mutes (logs).
+4. `warnings`: Player warnings.
+5. `monitor_logs`: Chat violations, spam blocks, and security triggers.
+6. `audit`: Staff actions (ban/mute/purge logs).
+7. `suggestions`: User-submitted word suggestions.
 
 ---
 

@@ -24,7 +24,6 @@ import com.sparkword.core.config.AntiSpamSettings;
 import com.sparkword.core.config.FilterSettings;
 import com.sparkword.core.storage.StorageManager;
 import com.sparkword.core.storage.model.MuteInfo;
-import com.sparkword.moderation.antispam.antiflood.AtomicTokenBucket;
 import com.sparkword.moderation.antispam.checks.*;
 import com.sparkword.moderation.antispam.security.InputSanitizer;
 import com.sparkword.util.TimeUtil;
@@ -105,7 +104,6 @@ public class SpamManager {
         String muteTimeStr = plugin.getConfig().getString(configPath, defaultTime);
         long muteSeconds = TimeUtil.parseDuration(muteTimeStr);
 
-        // Fixed: Allow muteSeconds == 0 (Permanent) for PunishmentType.MUTE as well.
         if (muteSeconds >= 0) {
             int cachedId = plugin.getEnvironment().getPlayerDataManager().getPlayerId(p.getUniqueId(), p.getName());
 
@@ -133,8 +131,8 @@ public class SpamManager {
                         "staff", StorageManager.SYSTEM_ACTOR,
                         "reason", reason,
                         "time", timeFormatted
-                    )
-                );
+                          )
+                                                                       );
             }
         });
     }

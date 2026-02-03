@@ -24,11 +24,6 @@ public interface SuggestionDAO {
 
     CompletableFuture<Boolean> addSuggestionAsync(int playerId, String word, String reason);
 
-    /**
-     * Processes a suggestion (accept/deny).
-     *
-     * @return SuggestionInfo containing word and original player UUID if found, null otherwise.
-     */
     CompletableFuture<SuggestionInfo> processSuggestionAsync(int id, boolean accept);
 
     CompletableFuture<Integer> purgeAsync(long daysOld);

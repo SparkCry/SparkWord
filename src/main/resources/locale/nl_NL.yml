@@ -2,7 +2,7 @@
 # SPARKWORD BERICHTEN v1.0.1
 # ==============================================================================
 prefix: "[<reset><gradient:#09bbf5:#FFFFFF>SparkWord</gradient><white>] "
-  
+
 # ==============================================================================
 # ALGEMEEN
 # ==============================================================================
@@ -44,7 +44,7 @@ help:
   scan: "/sw-scan <gray><speler> [pagina] <white>- Bekijk spelersgeschiedenis"
   suggest: "/sw-sg <gray><woord> [reden] <white>- Suggestie voor woordfilter"
   footer-next: "Typ /sw info {page} voor meer."
-  
+
 # ==============================================================================
 # COMMANDO GEBRUIK
 # ==============================================================================
@@ -54,7 +54,7 @@ help:
   usage-add: "<red>Gebruik: /sw add <n|s|wc> <woord>"
   usage-remove: "<red>Gebruik: /sw remove <n|s|wc> <woord>"
   usage-list: "<red>Gebruik: /sw list <n|s|wc|sg> [pagina]"
-  usage-mute: "<red>Gebruik: /sw-mute <speler> [reden]"  
+  usage-mute: "<red>Gebruik: /sw-mute <speler> [reden]"
   usage-permute: "<red>Gebruik: /sw-permute <speler> [reden]"
   usage-tempmute: "<red>Gebruik: /sw-tempmute <speler> <tijd> [reden]"
   usage-unmute: "<red>Gebruik: /sw-unmute <speler>"
@@ -90,10 +90,9 @@ moderation:
   scan-empty: "<gray>Geen recente overtredingen gevonden."
   default:
     mute: "permanent"
-    temp: "tijdelijk"
     perm: "globaal"
     no-reason: "Geen reden"
-  
+
 # ==============================================================================
 # LOGS & AUDIT
 # ==============================================================================
@@ -157,7 +156,7 @@ spam:
   injection: "<red>Illegale syntax gedetecteerd."
   caps: "<red>Misbruik a.u.b. geen HOOFDLETTERS."
   evasion: "Omzeiling Gedetecteerd"
-  
+
 notification:
   staff-suggest: "[<yellow>Suggereren<white>] <gray>{player} <white>-> <gray>{suggest} <white>({reason})"
   blocked: "<red>Bericht geblokkeerd: {reason}"

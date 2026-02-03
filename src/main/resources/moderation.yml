@@ -5,6 +5,7 @@
 #  Core toggles for specific filtering algorithms.
 # ==============================================================================
 system-filter:
+
   # Checks for Unicode/Special characters that are not standard Latin.
   # Normalizes text to detect evasion attempts.
   unicode: true
@@ -25,6 +26,7 @@ system-filter:
 #  Determines which game events are processed by the filter.
 # ==============================================================================
 filter-sources:
+
   # Filter public chat messages.
   chat: true
 
@@ -42,6 +44,7 @@ filter-sources:
 #  Controls how blocked words are handled in chat/components.
 # ==============================================================================
 replacement:
+
   # If true, blocked words are replaced with the string below.
   # If false, the entire message/action is blocked and cancelled.
   enabled: true
@@ -55,7 +58,6 @@ replacement:
 #  Configuration for the heuristic spam prevention engine.
 # ==============================================================================
 anti-spam:
-  # Master toggle for all anti-spam checks.
   enabled: true
 
   # ----------------------------------------------------------------------------
@@ -104,7 +106,9 @@ anti-spam:
     # How many previous messages to compare against.
     max-history: 2
 
+    # Waiting time between each repeated word.
     cooldown: 3s
+
   # ----------------------------------------------------------------------------
   #  Caps Limit
   #  Limits excessive use of UPPERCASE letters.
@@ -145,6 +149,7 @@ anti-spam:
   #  Limits the amount of numbers allowed in text.
   # ----------------------------------------------------------------------------
   digits-max-limit:
+
     # Max digits allowed in chat. 0 = disabled.
     chat-inputs: 7
 
@@ -156,6 +161,7 @@ anti-spam:
   #  Prevents book exploits and chunk ban attempts.
   # ----------------------------------------------------------------------------
   book-limits:
+
     # Maximum pages allowed in a book.
     max-pages: 30
 

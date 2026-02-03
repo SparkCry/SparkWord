@@ -59,7 +59,6 @@ public class NotifyManager {
         if (category == null) return true;
         String c = category.toLowerCase();
 
-        // CHANGED: Access settings via module
         NotificationSettings settings = plugin.getEnvironment().getConfigManager().getNotificationSettings();
 
         if (c.contains("repeat") || c.contains("digits") || c.contains("chars") || c.contains("caps")) return false;
@@ -83,7 +82,7 @@ public class NotifyManager {
             "player", player.getName(),
             "suggest", word,
             "reason", reason != null ? reason : "No reason"
-        ), true);
+                                                                                                                     ), true);
 
         broadcastComponent(msg);
     }
@@ -116,7 +115,7 @@ public class NotifyManager {
             "notification.alert",
             Map.of("player", offender.getName()),
             true
-        ).append(iconComponent);
+                                                                                    ).append(iconComponent);
 
         broadcastComponent(message);
     }
@@ -141,7 +140,7 @@ public class NotifyManager {
             "notification.alert",
             Map.of("player", player.getName()),
             true
-        ).append(iconComponent);
+                                                                                    ).append(iconComponent);
 
         broadcastComponent(message);
     }

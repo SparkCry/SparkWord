@@ -2,7 +2,7 @@
 # SPARKWORD MESSAGES v1.0.1
 # ==============================================================================
 prefix: "[<reset><gradient:#09bbf5:#FFFFFF>SparkWord</gradient><white>] "
-  
+
 # ==============================================================================
 # GENERIC
 # ==============================================================================
@@ -44,7 +44,7 @@ help:
   scan: "/sw-scan <gray><player> [page] <white>- View player history"
   suggest: "/sw-sg <gray><word> [reason] <white>- Suggest a word filter"
   footer-next: "Type /sw info {page} for more."
-  
+
 # ==============================================================================
 # COMMAND USAGE
 # ==============================================================================
@@ -54,7 +54,7 @@ help:
   usage-add: "<red>Usage: /sw add <n|s|wc> <word>"
   usage-remove: "<red>Usage: /sw remove <n|s|wc> <word>"
   usage-list: "<red>Usage: /sw list <n|s|wc|sg> [page]"
-  usage-mute: "<red>Usage: /sw-mute <player> [reason]"  
+  usage-mute: "<red>Usage: /sw-mute <player> [reason]"
   usage-permute: "<red>Usage: /sw-permute <player> [reason]"
   usage-tempmute: "<red>Usage: /sw-tempmute <player> <time> [reason]"
   usage-unmute: "<red>Usage: /sw-unmute <player>"
@@ -90,10 +90,9 @@ moderation:
   scan-empty: "<gray>No recent violations found."
   default:
     mute: "permanently"
-    temp: "temporarily"
     perm: "globally"
     no-reason: "No reason"
-  
+
 # ==============================================================================
 # LOGS & AUDIT
 # ==============================================================================
@@ -157,7 +156,7 @@ spam:
   injection: "<red>Illegal syntax detected."
   caps: "<red>Please do not abuse CAPS."
   evasion: "Evasion Detected"
-  
+
 notification:
   staff-suggest: "[<yellow>Suggest<white>] <gray>{player} <white>-> <gray>{suggest} <white>({reason})"
   blocked: "<red>Message blocked: {reason}"

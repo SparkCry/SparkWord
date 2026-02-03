@@ -59,9 +59,20 @@ public class ChatListener implements Listener {
 
         if (muteInfo.blocks(MuteScope.CHAT)) {
             event.setCancelled(true);
-            String timeLeft = muteInfo.isPermanent() ? "Permanent" : TimeUtil.formatDuration((muteInfo.expiry() - System.currentTimeMillis()) / 1000);
+
+            String timeDisplay;
+            if (muteInfo.isPermanent()) {
+                timeDisplay = "Permanent";
+            } else {
+                long remainingMillis = muteInfo.expiry() - System.currentTimeMillis();
+                if (remainingMillis < 0) remainingMillis = 0;
+
+                long seconds = Math.ceilDiv(remainingMillis, 1000);
+                timeDisplay = TimeUtil.formatDuration(seconds);
+            }
+
             plugin.getEnvironment().getMessageManager().sendMessage(player, "moderation.player-muted",
-                Map.of("staff", muteInfo.staff(), "time", timeLeft, "reason", muteInfo.reason()));
+                Map.of("staff", muteInfo.staff(), "time", timeDisplay, "reason", muteInfo.reason()));
             return;
         }
 
@@ -131,7 +142,7 @@ public class ChatListener implements Listener {
 
         SpamResult spamResult = plugin.getEnvironment().getSpamManager().checkSpam(
             player, messageToCheck, "Chat", false, null, -1, true
-        );
+                                                                                  );
 
         if (spamResult.blocked()) {
             event.setCancelled(true);

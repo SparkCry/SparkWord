@@ -33,7 +33,7 @@ public class CommandListener implements Listener {
     private static final int MAX_COMMAND_LENGTH = 256;
     private static final Set<String> BLOCKED_CMDS = Set.of(
         "msg", "tell", "w", "whisper", "r", "reply", "mail", "me", "say", "nick", "nickname", "tags", "rename"
-    );
+                                                          );
     private final SparkWord plugin;
 
     public CommandListener(SparkWord plugin) {
@@ -92,7 +92,7 @@ public class CommandListener implements Listener {
             null,
             -1,
             false
-        );
+                                                                            );
 
         if (spam.blocked()) {
             event.setCancelled(true);
@@ -103,7 +103,7 @@ public class CommandListener implements Listener {
                 "Spam/Logic",
                 "Restriction Triggered",
                 msg
-            );
+                                                                 );
         }
     }
 }

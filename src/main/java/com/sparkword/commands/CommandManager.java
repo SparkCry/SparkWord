@@ -52,7 +52,6 @@ public class CommandManager {
     private final Map<String, SubCommand> subCommands = new HashMap<>();
     private final AliasHandler aliasHandler;
 
-    // Store registered nodes to link aliases via redirection
     private final Map<String, LiteralCommandNode<CommandSourceStack>> nodeRegistry = new HashMap<>();
 
     public CommandManager(SparkWord plugin) {
@@ -89,7 +88,6 @@ public class CommandManager {
         subCommands.put("deny", new DenyCommand(environment));
         subCommands.put("sg", new SuggestCommand(environment));
 
-        // Internally map aliases to logic too, so console/plugins can use them via API dispatch
         subCommands.put("sw-mute", subCommands.get("mute"));
         subCommands.put("sw-tempmute", subCommands.get("tempmute"));
         subCommands.put("sw-checkmute", subCommands.get("checkmute"));
@@ -112,7 +110,6 @@ public class CommandManager {
         executeLogic(stack.getSender(), realCommand, args);
     }
 
-    // Changed to varargs to support direct calls with individual string arguments
     public boolean dispatchFromBrigadier(CommandSender sender, String commandLabel, String... args) {
         return executeLogic(sender, commandLabel, args);
     }
@@ -120,7 +117,6 @@ public class CommandManager {
     private boolean executeLogic(CommandSender sender, String cmdName, String[] args) {
         cmdName = cmdName.toLowerCase();
 
-        // Resolve alias recursively if needed
         String resolved = aliasHandler.resolve(cmdName);
         if (resolved != null) cmdName = resolved;
 
@@ -158,13 +154,11 @@ public class CommandManager {
     public void registerBrigadierTree(Commands commands) {
         nodeRegistry.clear();
 
-        // Register individual command nodes and capture them in nodeRegistry
         new MuteTree().register(commands, this, environment, nodeRegistry);
         new LogTree().register(commands, this, environment, nodeRegistry);
         new SuggestionTree().register(commands, this, environment, nodeRegistry);
         new SystemTree().register(commands, this, environment, nodeRegistry);
 
-        // Register main /sw tree and attach sub-branches
         var swNode = Commands.literal("sw")
             .requires(s -> s.getSender().hasPermission("sparkword.info") || s.getSender().hasPermission("sparkword.moderator"))
             .executes(ctx -> run(ctx, "sw"));
@@ -191,17 +185,13 @@ public class CommandManager {
             if (nodeRegistry.containsKey(realCmd)) {
                 LiteralCommandNode<CommandSourceStack> targetNode = nodeRegistry.get(realCmd);
 
-                // Instead of redirecting (which loses the root executor in some contexts),
-                // we copy the structure.
                 var aliasBuilder = Commands.literal(alias)
                     .requires(targetNode.getRequirement());
 
-                // 1. Copy the executor (Handles /alias with no args)
                 if (targetNode.getCommand() != null) {
                     aliasBuilder.executes(targetNode.getCommand());
                 }
 
-                // 2. Copy all child nodes (Handles arguments and autocomplete)
                 for (CommandNode<CommandSourceStack> child : targetNode.getChildren()) {
                     aliasBuilder.then(child);
                 }
@@ -210,10 +200,8 @@ public class CommandManager {
                     aliasBuilder.build(),
                     "SparkWord alias for " + realCmd,
                     Collections.emptyList()
-                );
-            }
-            // Fallback for simple aliases not mapped to the tree registry
-            else {
+                                 );
+            } else {
                 commands.register(
                     Commands.literal(alias)
                         .requires(stack -> true)
@@ -222,15 +210,15 @@ public class CommandManager {
                             return 1;
                         })
                         .then(Commands.argument("args", StringArgumentType.greedyString())
-                            .executes(ctx -> {
-                                String argString = StringArgumentType.getString(ctx, "args");
-                                executeFromLifecycle(ctx.getSource(), alias, argString.split(" "));
-                                return 1;
-                            })
-                        )
+                                .executes(ctx -> {
+                                    String argString = StringArgumentType.getString(ctx, "args");
+                                    executeFromLifecycle(ctx.getSource(), alias, argString.split(" "));
+                                    return 1;
+                                })
+                             )
                         .build(),
                     "SparkWord dynamic alias"
-                );
+                                 );
             }
         }
     }

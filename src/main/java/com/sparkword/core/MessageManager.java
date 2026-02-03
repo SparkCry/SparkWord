@@ -53,7 +53,6 @@ public class MessageManager {
 
         File targetFile = new File(localeFolder, targetLocale + ".yml");
 
-        // 1. If file doesn't exist on disk, try to extract it from JAR
         if (!targetFile.exists()) {
             if (plugin.getResource("locale/" + targetLocale + ".yml") != null) {
                 plugin.saveResource("locale/" + targetLocale + ".yml", false);
@@ -62,18 +61,15 @@ public class MessageManager {
                 targetLocale = "en_US";
                 targetFile = new File(localeFolder, "en_US.yml");
 
-                // Ensure default exists
                 if (!targetFile.exists() && plugin.getResource("locale/en_US.yml") != null) {
                     plugin.saveResource("locale/en_US.yml", false);
                 }
             }
         }
 
-        // 2. Load the configuration
         if (targetFile.exists()) {
             messagesConfig = YamlConfiguration.loadConfiguration(targetFile);
         } else {
-            // Extreme fallback if even en_US.yml failed
             messagesConfig = new YamlConfiguration();
             plugin.getLogger().severe("CRITICAL: Could not load any locale file.");
         }
@@ -124,7 +120,6 @@ public class MessageManager {
 
         String combined = usePrefix ? (prefixString + rawMsg) : rawMsg;
 
-        // Legacy placeholder support {key}
         for (String k : placeholders.keySet()) {
             combined = combined.replace("{" + k + "}", "<" + k + ">");
         }

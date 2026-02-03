@@ -17,9 +17,9 @@
  */
 package com.sparkword.core.storage.model;
 
-public record MuteInfo(boolean isMuted, String staff, String reason, long expiry, MuteScope scope) {
+public record MuteInfo(boolean isMuted, String staff, String reason, long expiry, long createdAt, MuteScope scope) {
 
-    public static final MuteInfo NOT_MUTED = new MuteInfo(false, null, null, 0, MuteScope.CHAT);
+    public static final MuteInfo NOT_MUTED = new MuteInfo(false, null, null, 0, 0, MuteScope.CHAT);
 
     public boolean hasExpired() {
         return isMuted && expiry != 0 && System.currentTimeMillis() > expiry;

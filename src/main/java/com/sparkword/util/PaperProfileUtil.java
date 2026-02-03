@@ -31,21 +31,12 @@ public final class PaperProfileUtil {
     private PaperProfileUtil() {
     }
 
-    /**
-     * Asynchronously resolves an OfflinePlayer by name using Paper's PlayerProfile API.
-     * Prioritizes online players for immediate resolution.
-     *
-     * @param name The player name to resolve.
-     * @return A CompletableFuture containing the OfflinePlayer if resolved, or null if not found.
-     */
     public static CompletableFuture<OfflinePlayer> resolve(String name) {
-        // 1. Check online players first (Fast, Sync, Reliable)
         Player online = Bukkit.getPlayerExact(name);
         if (online != null) {
             return CompletableFuture.completedFuture(online);
         }
 
-        // 2. Async Profile Lookup (Fallback for offline players)
         Server server = Bukkit.getServer();
         PlayerProfile profile = server.createPlayerProfile(name);
 
@@ -53,7 +44,6 @@ public final class PaperProfileUtil {
             UUID uuid = updatedProfile.getUniqueId();
             return uuid != null ? Bukkit.getOfflinePlayer(uuid) : null;
         }).exceptionally(ex -> {
-            // Handle API failures (rate limits, network issues) gracefully
             return null;
         });
     }

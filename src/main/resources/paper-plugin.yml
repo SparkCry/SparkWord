@@ -3,7 +3,7 @@ version: '${project.version}'
 main: com.sparkword.SparkWord
 description: Advanced Moderation Plugin
 api-version: '1.21'
-authors: SparkCry
+authors: [ SparkCry ]
 website: https://github.com/SparkCry/SparkWord
 
 permissions:
@@ -21,11 +21,11 @@ permissions:
   sparkword.admin:
     description: Admin access including debugging, purging, and strict mutes.
     children:
+      sparkword.audit: true
       sparkword.reload: true
       sparkword.add: true
       sparkword.remove: true
       sparkword.permute: true
-      sparkword.notify.icon: true
       sparkword.purge.*: true
       sparkword.bypass.*: true
       sparkword.debug: true
@@ -35,6 +35,7 @@ permissions:
     description: Standard moderation access.
     children:
       sparkword.info: true
+      sparkword.logs: true
       sparkword.list: true
       sparkword.accept: true
       sparkword.deny: true
@@ -44,9 +45,8 @@ permissions:
       sparkword.checkmute: true
       sparkword.scan: true
       sparkword.warn: true
+      sparkword.notify.icon: true
       sparkword.notify: true
-      sparkword.audit: true
-      sparkword.logs: true
     default: false
 
   sparkword.purge.*:
@@ -57,6 +57,7 @@ permissions:
       sparkword.purge.warning: true
       sparkword.purge.mute: true
       sparkword.purge.audit: true
+      sparkword.purge.history: true
     default: false
 
   sparkword.bypass.*:

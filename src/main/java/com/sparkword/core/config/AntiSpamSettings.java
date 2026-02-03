@@ -42,7 +42,6 @@ public class AntiSpamSettings {
     private int digitsLimitChat;
     private int digitsLimitWritable;
 
-    // Caps Limit (Added)
     private boolean capsEnabled;
     private int capsLimit;
 
@@ -84,7 +83,6 @@ public class AntiSpamSettings {
         this.digitsLimitChat = config.getInt("anti-spam.digits-max-limit.chat-inputs", 10);
         this.digitsLimitWritable = config.getInt("anti-spam.digits-max-limit.writable-inputs", 10);
 
-        // Load Caps Settings
         this.capsEnabled = config.getBoolean("anti-spam.caps-limit.enabled", true);
         this.capsLimit = config.getInt("anti-spam.caps-limit.limit", 15);
 
@@ -174,7 +172,6 @@ public class AntiSpamSettings {
         return digitsLimitWritable;
     }
 
-    // Caps Getters
     public boolean isCapsEnabled() {
         return capsEnabled;
     }

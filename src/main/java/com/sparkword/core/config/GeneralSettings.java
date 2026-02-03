@@ -26,12 +26,13 @@ import java.util.Map;
 import java.util.Set;
 
 public class GeneralSettings {
-    // The map to store presets in memory
+
     private final Map<String, String> presets = new HashMap<>();
     private boolean updateCheck;
     private boolean debugMode;
     private EventPriority eventPriority;
     private String locale;
+    private int historyPlayerDays;
 
     public GeneralSettings() {
     }
@@ -45,8 +46,8 @@ public class GeneralSettings {
             this.eventPriority = EventPriority.HIGH;
         }
         this.locale = config.getString("locale", "en");
+        this.historyPlayerDays = config.getInt("history-player", 7);
 
-        // --- RESTORED PRESETS LOADING LOGIC ---
         this.presets.clear();
         ConfigurationSection section = config.getConfigurationSection("presets");
         if (section != null) {
@@ -75,7 +76,7 @@ public class GeneralSettings {
         return locale;
     }
 
-    // --- Preset API ---
+    public int getHistoryPlayerDays() {return historyPlayerDays;}
 
     public String getPreset(String key) {
         if (key == null) return null;

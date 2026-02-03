@@ -72,7 +72,7 @@ public class FilterListCommand implements SubCommand {
 
             sender.sendMessage(MiniMessage.miniMessage().deserialize(
                 "<dark_gray>--- <#09bbf5>List " + typeName + " (Page " + page + ")</#09bbf5> <dark_gray>---"
-            ));
+                                                                    ));
 
             sender.sendMessage(Component.text(String.join(", ", sortedWords.subList(start, end)), NamedTextColor.GRAY));
             return true;
@@ -89,7 +89,7 @@ public class FilterListCommand implements SubCommand {
 
                     sender.sendMessage(MiniMessage.miniMessage().deserialize(
                         "<dark_gray>--- <#09bbf5>" + titleStr + " (Page " + fPage + ")</#09bbf5> <dark_gray>---"
-                    ));
+                                                                            ));
 
                     if (list.isEmpty()) env.getMessageManager().sendMessage(sender, "filter.list-empty");
                     else for (String str : list) sender.sendMessage(Component.text(str, NamedTextColor.YELLOW));

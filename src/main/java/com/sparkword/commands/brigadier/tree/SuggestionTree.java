@@ -34,40 +34,38 @@ public class SuggestionTree implements BrigadierNode {
 
     public static void attachSubCommands(LiteralArgumentBuilder<CommandSourceStack> swNode, CommandManager manager) {
         swNode.then(Commands.literal("accept").requires(s -> s.getSender().hasPermission("sparkword.accept"))
-            // Added execute handler here
-            .executes(ctx -> {
-                manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "accept");
-                return 1;
-            })
-            .then(Commands.argument("id", IntegerArgumentType.integer())
-                .then(Commands.argument("list", StringArgumentType.word())
-                    .suggests((ctx, b) -> {
-                        b.suggest("n");
-                        b.suggest("s");
-                        b.suggest("wc");
-                        return b.buildFuture();
-                    })
-                    .executes(ctx -> {
-                        manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "accept", String.valueOf(IntegerArgumentType.getInteger(ctx, "id")), StringArgumentType.getString(ctx, "list"));
-                        return 1;
-                    })
-                )
-            )
-        );
-
-        swNode.then(Commands.literal("deny").requires(s -> s.getSender().hasPermission("sparkword.deny"))
-            // Added execute handler here
-            .executes(ctx -> {
-                manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "deny");
-                return 1;
-            })
-            .then(Commands.argument("id", IntegerArgumentType.integer())
                 .executes(ctx -> {
-                    manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "deny", String.valueOf(IntegerArgumentType.getInteger(ctx, "id")));
+                    manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "accept");
                     return 1;
                 })
-            )
-        );
+                .then(Commands.argument("id", IntegerArgumentType.integer())
+                        .then(Commands.argument("list", StringArgumentType.word())
+                                .suggests((ctx, b) -> {
+                                    b.suggest("n");
+                                    b.suggest("s");
+                                    b.suggest("wc");
+                                    return b.buildFuture();
+                                })
+                                .executes(ctx -> {
+                                    manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "accept", String.valueOf(IntegerArgumentType.getInteger(ctx, "id")), StringArgumentType.getString(ctx, "list"));
+                                    return 1;
+                                })
+                             )
+                     )
+                   );
+
+        swNode.then(Commands.literal("deny").requires(s -> s.getSender().hasPermission("sparkword.deny"))
+                .executes(ctx -> {
+                    manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "deny");
+                    return 1;
+                })
+                .then(Commands.argument("id", IntegerArgumentType.integer())
+                        .executes(ctx -> {
+                            manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "deny", String.valueOf(IntegerArgumentType.getInteger(ctx, "id")));
+                            return 1;
+                        })
+                     )
+                   );
     }
 
     @Override
@@ -76,11 +74,11 @@ public class SuggestionTree implements BrigadierNode {
             .requires(src -> src.getSender().hasPermission("sparkword.suggest"))
             .executes(ctx -> run(manager, ctx, "sw-sg"))
             .then(Commands.argument("word", StringArgumentType.word())
-                .executes(ctx -> run(manager, ctx, "sw-sg", StringArgumentType.getString(ctx, "word")))
-                .then(Commands.argument("reason", StringArgumentType.greedyString())
-                    .executes(ctx -> run(manager, ctx, "sw-sg", StringArgumentType.getString(ctx, "word"), StringArgumentType.getString(ctx, "reason")))
-                )
-            );
+                    .executes(ctx -> run(manager, ctx, "sw-sg", StringArgumentType.getString(ctx, "word")))
+                    .then(Commands.argument("reason", StringArgumentType.greedyString())
+                            .executes(ctx -> run(manager, ctx, "sw-sg", StringArgumentType.getString(ctx, "word"), StringArgumentType.getString(ctx, "reason")))
+                         )
+                 );
 
         LiteralCommandNode<CommandSourceStack> node = builder.build();
         commands.register(node, "Suggest word", List.of("suggest"));

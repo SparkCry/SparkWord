@@ -18,10 +18,11 @@
 package com.sparkword.core.storage.model;
 
 import com.sparkword.util.TimeUtil;
+import org.jetbrains.annotations.NotNull;
 
 public record PlayerViolation(int id, Type type, String reason, String staff, long timestamp, long expiry) {
 
-    public String toLogString() {
+    public @NotNull String toLogString() {
         String date = TimeUtil.formatShortDate(timestamp);
         String prefix = switch (type) {
             case WARN -> "§e[WARN]";

@@ -65,13 +65,13 @@ public class UnmuteCommand implements SubCommand {
             if (entry != null && entry.getKey() != -1) {
                 env.getStorage().unmute(entry.getKey(), sender.getName(), fReason).thenRun(() -> {
                     Bukkit.getScheduler().runTask(env.getPlugin(), () ->
-                        env.getMessageManager().sendMessage(sender, "moderation.unmute-success", Map.of("player", entry.getValue()))
-                    );
+                            env.getMessageManager().sendMessage(sender, "moderation.unmute-success", Map.of("player", entry.getValue()))
+                                                 );
                 });
             } else {
                 Bukkit.getScheduler().runTask(env.getPlugin(), () ->
-                    env.getMessageManager().sendMessage(sender, "player-not-found")
-                );
+                        env.getMessageManager().sendMessage(sender, "player-not-found")
+                                             );
             }
         });
 

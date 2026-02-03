@@ -138,7 +138,7 @@ public class BookListener implements Listener {
                     plugin.getEnvironment().getNotifyManager().notifyBookBlocked(
                         player, "Zalgo/Unicode", "Corrupted Text", "Content Hidden (See Evidence)",
                         createEvidenceBook(player, evidencePagesZalgo)
-                    );
+                                                                                );
                 }
                 return;
             }

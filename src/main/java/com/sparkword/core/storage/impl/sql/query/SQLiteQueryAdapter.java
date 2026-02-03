@@ -23,13 +23,7 @@ public class SQLiteQueryAdapter implements QueryAdapter {
     public String getPlayerUpsertQuery() {
         return "INSERT OR REPLACE INTO players (id, uuid, name, last_seen) VALUES " +
             "((SELECT id FROM players WHERE uuid = ?), ?, ?, ?)";
-        // Note: SQLite upsert logic can be tricky.
-        // Simple insert or ignore + update is often safer, but for this abstraction:
-        // We often use explicit checks in logic or INSERT OR REPLACE.
-        // However, REPLACE deletes and re-inserts, changing the ID.
-        // Better SQLite approach for maintaining IDs: "INSERT INTO players ... ON CONFLICT(uuid) DO UPDATE SET ..."
-        // Assuming SQLite 3.24+ (Paper includes a modern sqlite driver).
-        // If older, we fallback to logic in DAO. For now, let's use ON CONFLICT.
+
     }
 
     @Override
@@ -38,8 +32,13 @@ public class SQLiteQueryAdapter implements QueryAdapter {
     }
 
     @Override
+    public String getMuteHistoryInsertQuery() {
+        return "INSERT INTO mute_history (player_id, reason, moderator, duration, created_at, scope) VALUES (?, ?, ?, ?, ?, ?)";
+    }
+
+    @Override
     public String getTableCreationQuery(String tableName) {
-        // SQLite syntax
+
         return switch (tableName) {
             case "players" -> "CREATE TABLE IF NOT EXISTS players (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -68,6 +67,15 @@ public class SQLiteQueryAdapter implements QueryAdapter {
                 "expires_at INTEGER, " +
                 "created_at INTEGER, " +
                 "scope TEXT DEFAULT 'CHAT', " +
+                "FOREIGN KEY(player_id) REFERENCES players(id))";
+            case "mute_history" -> "CREATE TABLE IF NOT EXISTS mute_history (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "player_id INTEGER, " +
+                "reason TEXT, " +
+                "moderator TEXT, " +
+                "duration INTEGER, " +
+                "created_at INTEGER, " +
+                "scope TEXT, " +
                 "FOREIGN KEY(player_id) REFERENCES players(id))";
             case "audit" -> "CREATE TABLE IF NOT EXISTS audit (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +

@@ -37,7 +37,7 @@ public class IPSplitCheck implements SpamCheck {
 
     private static final Pattern SPLIT_IP_PATTERN = Pattern.compile(
         "(?:^|[^0-9])((?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?:[^0-9]+(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3})(?:$|[^0-9])"
-    );
+                                                                   );
     private static final int MAX_HISTORY_ENTRIES = 5;
     private final SparkWord plugin;
     private final Map<UUID, LinkedList<HistoryEntry>> historyMap = new ConcurrentHashMap<>();
@@ -115,7 +115,7 @@ public class IPSplitCheck implements SpamCheck {
                 "30m",
                 "IP-Split",
                 PunishmentType.PERMUTE
-            );
+                                                   );
 
             plugin.getEnvironment().getNotifyManager().notifyStaff(
                 player,
@@ -123,7 +123,7 @@ public class IPSplitCheck implements SpamCheck {
                 "IP Split",
                 filteredText,
                 "Pattern Detected"
-            );
+                                                                  );
 
             return SpamResult.BLOCKED_WITH_REASON("spam.ip-split", false);
         }

@@ -18,21 +18,22 @@
 package com.sparkword.moderation.antispam.checks;
 
 import com.sparkword.SparkWord;
+import com.sparkword.core.config.SecuritySettings;
 import com.sparkword.moderation.antispam.SpamCheck;
 import com.sparkword.moderation.antispam.SpamContext;
 import com.sparkword.moderation.antispam.SpamManager.SpamResult;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.Set;
+import java.net.IDN;
+import java.util.Locale;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DomainCheck implements SpamCheck {
-    private static final Pattern OBFUSCATION_REMOVER = Pattern.compile("[\\[\\]\\(\\)\\{\\}]");
-    private static final Pattern DOT_NORMALIZER = Pattern.compile("(\\s*\\(dot\\)\\s*|\\s*\\[dot\\]\\s*|\\s*\\(punto\\)\\s*)", Pattern.CASE_INSENSITIVE);
-    private static final Set<String> COMMON_TLDS = Set.of(
-        "com", "net", "org", "edu", "gov", "mil", "int", "eu", "es", "mx", "ar", "co", "cl", "pe",
-        "xyz", "info", "biz", "top", "club", "online", "pro", "site", "vip", "gg", "io", "me", "tv"
-    );
+
+    private static final Pattern NON_ALPHANUMERIC = Pattern.compile("[^a-zA-Z0-9]");
     private final SparkWord plugin;
 
     public DomainCheck(SparkWord plugin) {
@@ -43,78 +44,131 @@ public class DomainCheck implements SpamCheck {
     public SpamResult check(Player player, SpamContext context) {
         if (!plugin.getEnvironment().getConfigManager().isDomainEnabled()) return SpamResult.PASSED;
 
+        SecuritySettings settings = plugin.getEnvironment().getConfigManager().getSecuritySettings();
+        Pattern dotPattern = settings.getDotPattern();
+        Pattern blacklistPattern = settings.getBlacklistPattern();
+
         String raw = context.cleanMessage();
-        if (raw.indexOf('.') == -1 && !containsDotKeyword(raw)) {
-            return SpamResult.PASSED;
+
+        if (blacklistPattern != null) {
+            String collapsed = NON_ALPHANUMERIC.matcher(raw).replaceAll("").toLowerCase(Locale.ROOT);
+            Matcher blMatcher = blacklistPattern.matcher(collapsed);
+
+            if (blMatcher.find()) {
+                String detected = blMatcher.group(1);
+                plugin.getEnvironment().getNotifyManager().notifyStaff(
+                    player, context.source(), "Anti-Domain (Blacklist)", context.cleanMessage(), "Detected: " + detected
+                                                                      );
+                return SpamResult.BLOCKED_WITH_REASON("spam.ip", false);
+            }
         }
 
-        String step1 = OBFUSCATION_REMOVER.matcher(raw).replaceAll("");
-        String normalized = DOT_NORMALIZER.matcher(step1).replaceAll(".");
+        if (dotPattern != null) {
+            String normalized = dotPattern.matcher(raw).replaceAll(".");
+            String collapsedDots = normalized.replaceAll("\\.+", ".");
 
-        if (scanForDomainZeroAlloc(normalized)) {
+            int len = collapsedDots.length();
+            int dotIndex = collapsedDots.indexOf('.');
 
-            plugin.getEnvironment().getNotifyManager().notifyStaff(
-                player,
-                context.source(),
-                "Anti-Domain",
-                context.cleanMessage(),
-                "Link/Domain"
-            );
-            return SpamResult.BLOCKED_WITH_REASON("spam.ip", false);
+            while (dotIndex != -1) {
+                if (dotIndex < len - 1) {
+
+                    String tld = extractTldIgnoringSpaces(collapsedDots, dotIndex, 10, settings);
+
+                    if (tld != null) {
+                        String label = extractLabelPreceding(collapsedDots, dotIndex);
+
+                        if (label != null && !label.isEmpty()) {
+                            String candidate = label + "." + tld;
+
+                            String canonical;
+                            try {
+                                String ascii = IDN.toASCII(candidate, IDN.ALLOW_UNASSIGNED);
+                                canonical = ascii.toLowerCase(Locale.ROOT);
+                                if (canonical.endsWith(".")) canonical = canonical.substring(0, canonical.length() - 1);
+                            } catch (IllegalArgumentException e) {
+                                dotIndex = collapsedDots.indexOf('.', dotIndex + 1);
+                                continue;
+                            }
+
+                            if (settings.isWhitelisted(canonical)) {
+                                dotIndex = collapsedDots.indexOf('.', dotIndex + 1);
+                                continue;
+                            }
+
+                            plugin.getEnvironment().getNotifyManager().notifyStaff(
+                                player, context.source(), "Anti-Domain", context.cleanMessage(), "Link: " + canonical
+                                                                                  );
+                            return SpamResult.BLOCKED_WITH_REASON("spam.ip", false);
+                        }
+                    }
+                }
+                dotIndex = collapsedDots.indexOf('.', dotIndex + 1);
+            }
         }
+
         return SpamResult.PASSED;
     }
 
-    private boolean containsDotKeyword(String text) {
-        String lower = text.toLowerCase();
-        return lower.contains("(dot)") || lower.contains("[dot]") || lower.contains("(punto)");
-    }
-
-    private boolean scanForDomainZeroAlloc(String text) {
+    private @Nullable String extractTldIgnoringSpaces(@NotNull String text, int dotIndex, int maxLen, SecuritySettings settings) {
+        StringBuilder sb = new StringBuilder(8);
+        int i = dotIndex + 1;
         int len = text.length();
-        int start = 0;
 
-        for (int i = 0; i <= len; i++) {
-            if (i == len || Character.isWhitespace(text.charAt(i))) {
-                if (start < i) {
-                    if (checkWordSegment(text, start, i)) {
-                        return true;
-                    }
+        while (i < len && sb.length() < maxLen) {
+            char c = text.charAt(i);
+
+            if (Character.isWhitespace(c)) {
+                String current = sb.toString();
+                if (settings.isBlockedTLD(current)) {
+                    return current;
                 }
-                start = i + 1;
+                i++;
+                continue;
             }
+
+            if (Character.isLetter(c)) {
+                sb.append(Character.toLowerCase(c));
+                i++;
+                continue;
+            }
+
+            break;
         }
-        return false;
+
+        String result = sb.toString();
+        return settings.isBlockedTLD(result) ? result : null;
     }
 
-    private boolean checkWordSegment(String text, int start, int end) {
-        if ((end - start) < 4) return false;
+    private @Nullable String extractLabelPreceding(String text, int dotIndex) {
+        int endOfLabel = dotIndex;
 
-        int lastDot = -1;
-        for (int k = end - 1; k >= start; k--) {
-            if (text.charAt(k) == '.') {
-                lastDot = k;
-                break;
-            }
+        while (endOfLabel > 0 && Character.isWhitespace(text.charAt(endOfLabel - 1))) {
+            endOfLabel--;
         }
 
-        if (lastDot <= start || lastDot >= end - 1) return false;
+        if (endOfLabel == 0) return null;
 
-        int tldStart = lastDot + 1;
-        int tldEnd = end;
-
-        while (tldEnd > tldStart) {
-            char c = text.charAt(tldEnd - 1);
-            if (c == ',' || c == '!' || c == '?' || c == '.') {
-                tldEnd--;
+        int startOfLabel = endOfLabel;
+        while (startOfLabel > 0) {
+            char c = text.charAt(startOfLabel - 1);
+            if (isValidLabelChar(c)) {
+                startOfLabel--;
             } else {
                 break;
             }
         }
 
-        if ((tldEnd - tldStart) > 6) return false;
+        if (startOfLabel == endOfLabel) return null;
 
-        String tldCandidate = text.substring(tldStart, tldEnd);
-        return COMMON_TLDS.contains(tldCandidate.toLowerCase());
+        return text.substring(startOfLabel, endOfLabel);
+    }
+
+    private boolean isValidLabelChar(char c) {
+        return (c >= 'a' && c <= 'z') ||
+            (c >= 'A' && c <= 'Z') ||
+            (c >= '0' && c <= '9') ||
+            c == '-' ||
+            c == '_';
     }
 }

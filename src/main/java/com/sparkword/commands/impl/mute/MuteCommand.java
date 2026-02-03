@@ -66,7 +66,6 @@ public class MuteCommand implements SubCommand {
         }
         final String reason = reasonRaw;
 
-        // Try DB lookup first, then fallback to Mojang API
         env.getStorage().getPlayerIdByNameAsync(playerName).thenCompose(dbId -> {
             if (dbId != -1) return CompletableFuture.completedFuture(Map.entry(dbId, playerName));
 

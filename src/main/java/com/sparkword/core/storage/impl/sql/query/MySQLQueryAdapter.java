@@ -21,7 +21,7 @@ public class MySQLQueryAdapter implements QueryAdapter {
 
     @Override
     public String getPlayerUpsertQuery() {
-        // MySQL uses standard ordered parameters: UUID, Name, LastSeen
+
         return "INSERT INTO players (uuid, name, last_seen) VALUES (?, ?, ?) " +
             "ON DUPLICATE KEY UPDATE name = VALUES(name), last_seen = VALUES(last_seen)";
     }
@@ -34,12 +34,17 @@ public class MySQLQueryAdapter implements QueryAdapter {
     }
 
     @Override
+    public String getMuteHistoryInsertQuery() {
+        return "INSERT INTO mute_history (player_id, reason, moderator, duration, created_at, scope) VALUES (?, ?, ?, ?, ?, ?)";
+    }
+
+    @Override
     public String getTableCreationQuery(String tableName) {
         return switch (tableName) {
             case "players" -> "CREATE TABLE IF NOT EXISTS players (" +
                 "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
                 "uuid VARCHAR(36) UNIQUE, " +
-                "name VARCHAR(64), " + // Increased to 64 to prevent truncation
+                "name VARCHAR(64), " +
                 "last_seen BIGINT) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
             case "suggestion" -> "CREATE TABLE IF NOT EXISTS suggestions (" +
                 "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
@@ -63,6 +68,15 @@ public class MySQLQueryAdapter implements QueryAdapter {
                 "expires_at BIGINT, " +
                 "created_at BIGINT, " +
                 "scope VARCHAR(32) DEFAULT 'CHAT', " +
+                "FOREIGN KEY(player_id) REFERENCES players(id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+            case "mute_history" -> "CREATE TABLE IF NOT EXISTS mute_history (" +
+                "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
+                "player_id INTEGER, " +
+                "reason TEXT, " +
+                "moderator VARCHAR(64), " +
+                "duration BIGINT, " +
+                "created_at BIGINT, " +
+                "scope VARCHAR(32), " +
                 "FOREIGN KEY(player_id) REFERENCES players(id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
             case "audit" -> "CREATE TABLE IF NOT EXISTS audit (" +
                 "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +

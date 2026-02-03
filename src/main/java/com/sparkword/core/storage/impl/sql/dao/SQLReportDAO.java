@@ -74,9 +74,36 @@ public class SQLReportDAO extends AbstractSQLDAO implements ReportDAO {
             List<String> report = new ArrayList<>();
             int limit = 10;
             int offset = (page - 1) * limit;
-            long timeLimit = System.currentTimeMillis() - (7 * 86400000L);
+
+            long timeLimit = System.currentTimeMillis() - (365 * 86400000L);
 
             try (Connection conn = connectionFactory.getConnection()) {
+                try (PreparedStatement ps = conn.prepareStatement("SELECT reason, created_at, moderator FROM warnings WHERE player_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?")) {
+                    ps.setInt(1, playerId);
+                    ps.setInt(2, limit);
+                    ps.setInt(3, offset);
+                    ResultSet rs = ps.executeQuery();
+                    while (rs.next()) {
+                        report.add("§e[WARN] §7" + TimeUtil.formatShortDate(rs.getLong("created_at")) +
+                            " (" + rs.getString("moderator") + "): " + rs.getString("reason"));
+                    }
+                }
+
+                try (PreparedStatement ps = conn.prepareStatement("SELECT reason, created_at, moderator, duration, scope FROM mute_history WHERE player_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?")) {
+                    ps.setInt(1, playerId);
+                    ps.setInt(2, limit);
+                    ps.setInt(3, offset);
+                    ResultSet rs = ps.executeQuery();
+                    while (rs.next()) {
+                        long duration = rs.getLong("duration");
+                        String timeStr = (duration == 0) ? "Perm" : TimeUtil.formatDuration(duration);
+                        String prefix = "§c[MUTE]";
+
+                        report.add(prefix + " §7" + TimeUtil.formatShortDate(rs.getLong("created_at")) +
+                            " (" + rs.getString("moderator") + "): " + rs.getString("reason") + " §8[" + timeStr + "]");
+                    }
+                }
+
                 if (page == 1) {
                     try (PreparedStatement ps = conn.prepareStatement("SELECT reason, expires_at FROM muted WHERE player_id = ?")) {
                         ps.setInt(1, playerId);
@@ -84,21 +111,11 @@ public class SQLReportDAO extends AbstractSQLDAO implements ReportDAO {
                         if (rs.next()) {
                             long exp = rs.getLong("expires_at");
                             String timeLeft = (exp == 0) ? "Perm" : TimeUtil.formatDuration((exp - System.currentTimeMillis()) / 1000);
-                            report.add("§c[ACTIVE] MUTE: §7" + rs.getString("reason") + " | Expires: §e" + timeLeft);
+                            report.add(0, "§c[ACTIVE STATUS] §7" + rs.getString("reason") + " | Expires: §e" + timeLeft);
                         }
                     }
                 }
-                try (PreparedStatement ps = conn.prepareStatement("SELECT reason, created_at, moderator FROM warnings WHERE player_id = ? AND created_at > ? ORDER BY created_at DESC LIMIT ? OFFSET ?")) {
-                    ps.setInt(1, playerId);
-                    ps.setLong(2, timeLimit);
-                    ps.setInt(3, limit);
-                    ps.setInt(4, offset);
-                    ResultSet rs = ps.executeQuery();
-                    while (rs.next()) {
-                        report.add("§e[WARN] §7" + TimeUtil.formatShortDate(rs.getLong("created_at")) +
-                            " (" + rs.getString("moderator") + "): " + rs.getString("reason"));
-                    }
-                }
+
             } catch (SQLException e) {
                 e.printStackTrace();
             }

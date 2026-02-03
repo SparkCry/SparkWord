@@ -80,10 +80,6 @@ public class PlayerDataManager implements Listener {
         }
     }
 
-    /**
-     * Re-initializes data for an online player. Used during reloads to ensure
-     * mutes are re-applied and IDs are re-fetched without requiring a re-login.
-     */
     public void refreshPlayer(Player player) {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             int dbId = loginSync.handleLogin(player.getUniqueId(), player.getName());

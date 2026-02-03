@@ -149,25 +149,19 @@ class SystemIntegrationTest {
         bukkitMock.when(Bukkit::getScheduler).thenReturn(scheduler);
         bukkitMock.when(Bukkit::getOnlinePlayers).thenReturn(Collections.singletonList(playerSender));
 
-        // Setup Player Profile Resolution Mocks
-        UUID fixedUUID = UUID.fromString("c0ddc939-5f0a-4a53-96c4-b558d6c5098e"); // Consistent UUID for tests
+        UUID fixedUUID = UUID.fromString("c0ddc939-5f0a-4a53-96c4-b558d6c5098e"); 
         lenient().when(mockOfflinePlayer.getUniqueId()).thenReturn(fixedUUID);
         lenient().when(mockOfflinePlayer.getName()).thenReturn("TargetPlayer");
 
-        // 1. Online player check (Return null to simulate offline by default)
         bukkitMock.when(() -> Bukkit.getPlayerExact(anyString())).thenReturn(null);
 
-        // 2. Offline player resolution (By UUID, used after profile update)
         bukkitMock.when(() -> Bukkit.getOfflinePlayer(any(UUID.class))).thenReturn(mockOfflinePlayer);
 
-        // 3. Fallback/Legacy resolution
         bukkitMock.when(() -> Bukkit.getOfflinePlayer(anyString())).thenReturn(mockOfflinePlayer);
         bukkitMock.when(() -> Bukkit.getPlayer(any(UUID.class))).thenReturn(playerSender);
 
-        // 4. Server createProfile logic
         lenient().when(server.createPlayerProfile(anyString())).thenReturn(mockPlayerProfile);
 
-        // Fix for generic return type inference in Mockito
         lenient().doReturn(CompletableFuture.completedFuture(mockPlayerProfile)).when(mockPlayerProfile).update();
 
         lenient().when(mockPlayerProfile.getUniqueId()).thenReturn(fixedUUID);
@@ -198,19 +192,15 @@ class SystemIntegrationTest {
         lenient().when(configManager.getSuggestionMaxReason()).thenReturn(100);
         lenient().when(configManager.getEventPriority()).thenReturn(org.bukkit.event.EventPriority.HIGH);
 
-        // Ensure async executors run immediately for tests
         lenient().when(env.getAsyncExecutor()).thenReturn(Runnable::run);
 
         lenient().when(filterManager.getLoader()).thenReturn(wordLoader);
         lenient().when(storage.getAudit()).thenReturn(auditRepo);
         lenient().when(storage.getReports()).thenReturn(reportRepo);
 
-        // Fix NullPointerException by mocking getPlayerIdByNameAsync
         lenient().when(storage.getPlayerIdByNameAsync(anyString())).thenReturn(CompletableFuture.completedFuture(-1));
-        // Default: DB does NOT find player by UUID directly (unless mocked in test)
         lenient().when(storage.getPlayerIdAsync(any(UUID.class), anyString())).thenReturn(CompletableFuture.completedFuture(-1));
 
-        // Stub getString to avoid NPE in Map.of() when commands construct messages
         lenient().when(messageManager.getString(anyString())).thenAnswer(invocation -> invocation.getArgument(0));
 
         lenient().when(mockConfig.contains(anyString())).thenReturn(false);
@@ -248,8 +238,6 @@ class SystemIntegrationTest {
         MuteCommand cmd = new MuteCommand(env);
         String targetName = "BadPlayer";
 
-        // Fix: MuteCommand logic flows from getPlayerIdByNameAsync -> (if -1) -> PaperProfileUtil -> getPlayerIdAsync
-        // We must mock storage.getPlayerIdAsync to return a valid ID, not playerDataManager
         when(storage.getPlayerIdAsync(any(UUID.class), anyString())).thenReturn(CompletableFuture.completedFuture(10));
 
         doAnswer(invocation -> {
@@ -273,7 +261,6 @@ class SystemIntegrationTest {
         TempMuteCommand cmd = new TempMuteCommand(env);
         String targetName = "TempBadPlayer";
 
-        // Fix: Mock storage, not cache
         when(storage.getPlayerIdAsync(any(UUID.class), anyString())).thenReturn(CompletableFuture.completedFuture(11));
 
         doAnswer(invocation -> {
@@ -340,7 +327,6 @@ class SystemIntegrationTest {
         WarnCommand cmd = new WarnCommand(env);
 
         bukkitMock.when(() -> Bukkit.getPlayer("InvalidPlayer")).thenReturn(null);
-        // Ensure storage returns -1 to trigger "player-not-found"
         when(storage.getPlayerIdAsync(any(UUID.class), anyString())).thenReturn(CompletableFuture.completedFuture(-1));
 
         cmd.execute(adminSender, new String[]{"InvalidPlayer", "Behave"});

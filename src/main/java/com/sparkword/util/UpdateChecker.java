@@ -125,12 +125,12 @@ public class UpdateChecker implements Listener {
 
         if (updateAvailable && event.getPlayer().hasPermission("sparkword.admin")) {
             event.getPlayer().sendMessage(Component.text()
-                .append(Component.text("SparkWord ", NamedTextColor.GOLD))
-                .append(Component.text("v" + latestVersion + " is available! ", NamedTextColor.GREEN))
-                .append(Component.text("[Download]", NamedTextColor.YELLOW)
-                    .clickEvent(ClickEvent.openUrl("https://github.com/" + GITHUB_REPO + "/releases/latest")))
-                .build()
-            );
+                    .append(Component.text("SparkWord ", NamedTextColor.GOLD))
+                    .append(Component.text("v" + latestVersion + " is available! ", NamedTextColor.GREEN))
+                    .append(Component.text("[Download]", NamedTextColor.YELLOW)
+                        .clickEvent(ClickEvent.openUrl("https://github.com/" + GITHUB_REPO + "/releases/latest")))
+                    .build()
+                                         );
         }
     }
 }

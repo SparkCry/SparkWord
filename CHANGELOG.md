@@ -29,3 +29,19 @@
 
 ### Fixed
 - Anti-flood was not detecting
+
+## Version 1.2.0
+**Release date:** 2026-02-03
+
+### Changed
+- Refactored the project structure by moving all word-related configuration files from the `words` directory into the new `moderation` directory to improve modularity and future scalability.
+- Updated the player scanning system so that active mute states are now captured and evaluated statically during scans, ensuring consistent moderation enforcement.
+- Added an automated purge configuration for the `sw-scan` history, allowing cleanup to be defined based on a number of days.
+- Modified the purge execution behavior so that expired data is no longer removed immediately upon reaching the configured day limit, but instead is processed after the next server restart.
+- Removed the `default.temp` configuration key; temporary silence durations are now applied dynamically based on the defined mute context.
+
+### Added
+- Enhanced the `anti-domain` security logic, introducing stricter validation rules and adding a dedicated configuration file located at `moderation/security-filters.yml`.
+
+### Fixed
+- Fixed an issue where presets were not being displayed correctly when executing the `/sw-tempmute` command.

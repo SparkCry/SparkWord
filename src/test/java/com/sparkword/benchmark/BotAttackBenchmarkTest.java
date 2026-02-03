@@ -22,6 +22,7 @@ import com.sparkword.SparkWord;
 import com.sparkword.core.ConfigManager;
 import com.sparkword.core.NotifyManager;
 import com.sparkword.core.config.AntiSpamSettings;
+import com.sparkword.core.config.SecuritySettings;
 import com.sparkword.moderation.antispam.SpamCheck;
 import com.sparkword.moderation.antispam.SpamContext;
 import com.sparkword.moderation.antispam.SpamManager;
@@ -39,6 +40,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -56,6 +58,8 @@ class BotAttackBenchmarkTest {
     @Mock
     private AntiSpamSettings antiSpamSettings;
     @Mock
+    private SecuritySettings securitySettings; 
+    @Mock
     private NotifyManager notifyManager;
     @Mock
     private SpamManager spamManager;
@@ -72,6 +76,11 @@ class BotAttackBenchmarkTest {
         when(environment.getNotifyManager()).thenReturn(notifyManager);
 
         when(configManager.getAntiSpamSettings()).thenReturn(antiSpamSettings);
+
+        when(configManager.getSecuritySettings()).thenReturn(securitySettings);
+
+        when(securitySettings.getDotPattern()).thenReturn(Pattern.compile("[\\p{P}\\p{S}]"));
+
         when(configManager.isDomainEnabled()).thenReturn(true);
         when(configManager.isAntiFloodEnabled()).thenReturn(true);
         when(configManager.getAntiFloodMessages()).thenReturn(20);

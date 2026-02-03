@@ -60,7 +60,7 @@ public class LogsCommand implements SubCommand {
             Bukkit.getScheduler().runTask(env.getPlugin(), () -> {
                 sender.sendMessage(MiniMessage.miniMessage().deserialize(
                     "<dark_gray>--- <#09bbf5>Logs (" + type.toUpperCase() + ") Pg: " + fPage + "</#09bbf5> <dark_gray>---"
-                ));
+                                                                        ));
 
                 if (logs.isEmpty()) {
                     env.getMessageManager().sendMessage(sender, "logs.viewer.no-records");
@@ -91,7 +91,7 @@ public class LogsCommand implements SubCommand {
             Component.text("[Content]")
                 .color(NamedTextColor.WHITE)
                 .hoverEvent(HoverEvent.showText(hoverContent))
-        );
+                          );
     }
 
     private Component buildHoverContent(LogEntry log) {
@@ -103,7 +103,6 @@ public class LogsCommand implements SubCommand {
         if (content == null) return Component.text("No content");
 
         if (source.contains("book")) {
-            // Passing false to avoid prefix in title
             Component bookTitle = env.getMessageManager().getComponent("logs.viewer.hover-source-book", null, false);
             Component contentTitle = env.getMessageManager().getComponent("logs.viewer.hover-content-book", null, false);
             Component censorTitle = env.getMessageManager().getComponent("logs.viewer.hover-censor-book", Map.of("detected", detected != null ? detected : "?"), false);
@@ -120,7 +119,6 @@ public class LogsCommand implements SubCommand {
         if (source.contains("chat") || violation.contains("flood")) {
             if (violation.contains("flood")) {
                 String[] msgs = content.split(Pattern.quote(" | "));
-                // Passing false to avoid prefix in title
                 Component floodTitle = env.getMessageManager().getComponent("logs.viewer.hover-flood", null, false);
                 Component floodHover = floodTitle;
                 for (String msg : msgs) {

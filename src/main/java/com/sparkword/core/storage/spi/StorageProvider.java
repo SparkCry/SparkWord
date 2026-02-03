@@ -24,24 +24,12 @@ import java.util.concurrent.Executor;
 
 public interface StorageProvider {
 
-    /**
-     * Initialize the storage provider (connections, pools, etc.)
-     *
-     * @param config ConfigManager instance to read settings from
-     */
     void init(ConfigManager config);
 
-    /**
-     * Close all connections and resources.
-     */
     void shutdown();
 
-    /**
-     * Get the async executor for DB operations.
-     */
     Executor getAsyncExecutor();
 
-    // DAO Accessors
     PlayerDAO getPlayerDAO();
 
     MuteDAO getMuteDAO();

@@ -43,13 +43,11 @@ public class AliasHandler {
         YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
         if (config.isConfigurationSection("commands.alias")) {
             for (String realCmd : config.getConfigurationSection("commands.alias").getKeys(false)) {
-                // List aliases
                 List<String> aliases = config.getStringList("commands.alias." + realCmd);
                 for (String alias : aliases) {
                     aliasToRealMap.put(alias.toLowerCase(), realCmd.toLowerCase());
                 }
 
-                // Single alias fallback
                 String single = config.getString("commands.alias." + realCmd);
                 if (single != null && aliases.isEmpty()) {
                     aliasToRealMap.put(single.toLowerCase(), realCmd.toLowerCase());

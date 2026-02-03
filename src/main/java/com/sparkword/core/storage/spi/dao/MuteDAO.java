@@ -28,13 +28,9 @@ public interface MuteDAO {
 
     CompletableFuture<Void> unmuteAsync(int playerId);
 
-    /**
-     * Fetches mute info blocking. Used for login sync and cache refresh.
-     */
     MuteInfo fetchMuteInfoBlocking(int playerId);
 
-    /**
-     * Returns the expiry timestamp of the current mute, or -1 if not muted.
-     */
     CompletableFuture<Long> getMuteExpiryAsync(int playerId);
+
+    CompletableFuture<Integer> purgeHistoryAsync(long daysOld);
 }

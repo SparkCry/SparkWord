@@ -98,10 +98,8 @@ public class Environment {
         messageManager.reload();
         storage.reload();
 
-        // Invalidate current cache
         playerDataManager.invalidateAll();
 
-        // Refresh all online players immediately to restore their state/mutes
         for (Player p : Bukkit.getOnlinePlayers()) {
             playerDataManager.refreshPlayer(p);
         }

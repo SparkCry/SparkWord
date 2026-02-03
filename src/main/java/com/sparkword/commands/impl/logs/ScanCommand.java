@@ -76,7 +76,7 @@ public class ScanCommand implements SubCommand {
             Bukkit.getScheduler().runTask(env.getPlugin(), () -> {
                 sender.sendMessage(MiniMessage.miniMessage().deserialize(
                     "<dark_gray>--- <#09bbf5>Scan: " + result.getKey() + " (Pg " + fPage + ")</#09bbf5> <dark_gray>---"
-                ));
+                                                                        ));
 
                 if (result.getValue().isEmpty()) {
                     env.getMessageManager().sendMessage(sender, "moderation.scan-empty");

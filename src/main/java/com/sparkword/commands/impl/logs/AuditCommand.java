@@ -52,7 +52,7 @@ public class AuditCommand implements SubCommand {
             Bukkit.getScheduler().runTask(env.getPlugin(), () -> {
                 sender.sendMessage(MiniMessage.miniMessage().deserialize(
                     "<dark_gray>--- <#09bbf5>Audit Logs: " + target + "</#09bbf5> <dark_gray>---"
-                ));
+                                                                        ));
 
                 if (logs.isEmpty()) {
                     env.getMessageManager().sendMessage(sender, "logs.viewer.no-records");
@@ -75,7 +75,7 @@ public class AuditCommand implements SubCommand {
         Component base = env.getMessageManager().getComponent("audit.format.base", Map.of(
             "date", dateStr,
             "staff", log.staffName()
-        ), false);
+                                                                                         ), false);
 
         Component details = switch (action.toUpperCase()) {
             case "MUTE" ->
@@ -101,16 +101,16 @@ public class AuditCommand implements SubCommand {
             case "PURGE" -> env.getMessageManager().getComponent("audit.format.actions.purge", Map.of(
                 "type", data.getOrDefault("Type", "all"),
                 "days", data.getOrDefault("Days", "0")
-            ), false);
+                                                                                                     ), false);
 
             case "ACCEPT" -> env.getMessageManager().getComponent("audit.format.actions.accept", Map.of(
                 "word", data.getOrDefault("Word", "?"),
                 "list", data.getOrDefault("List", "n")
-            ), false);
+                                                                                                       ), false);
 
             case "DENY" -> env.getMessageManager().getComponent("audit.format.actions.deny", Map.of(
                 "word", data.getOrDefault("Word", "?")
-            ), false);
+                                                                                                   ), false);
 
             case "API_MUTE" ->
                 env.getMessageManager().getComponent("audit.format.actions.api-mute", Map.of("player", data.getOrDefault("Player", "?")), false)
@@ -119,7 +119,7 @@ public class AuditCommand implements SubCommand {
             default -> env.getMessageManager().getComponent("audit.format.actions.default", Map.of(
                 "action", action,
                 "detail", log.detail()
-            ), false);
+                                                                                                  ), false);
         };
 
         return base.append(details);

@@ -28,15 +28,16 @@ import java.io.File;
 public class ConfigManager {
     private final SparkWord plugin;
 
-    // Config Modules
     private final StorageSettings storageSettings = new StorageSettings();
     private final GeneralSettings generalSettings = new GeneralSettings();
     private final FilterSettings filterSettings = new FilterSettings();
     private final AntiSpamSettings antiSpamSettings = new AntiSpamSettings();
     private final NotificationSettings notificationSettings = new NotificationSettings();
     private final SuggestionSettings suggestionSettings = new SuggestionSettings();
+    private final SecuritySettings securitySettings = new SecuritySettings();
 
     private FileConfiguration moderationConfig;
+    private FileConfiguration securityConfig;
 
     public ConfigManager(SparkWord plugin) {
         this.plugin = plugin;
@@ -44,18 +45,22 @@ public class ConfigManager {
     }
 
     public void reload() {
-        // 1. Load main config.yml
         plugin.reloadConfig();
         FileConfiguration mainConfig = plugin.getConfig();
 
-        // 2. Load moderation.yml
         File modFile = new File(plugin.getDataFolder(), "moderation.yml");
         if (!modFile.exists()) {
             plugin.saveResource("moderation.yml", false);
         }
         this.moderationConfig = YamlConfiguration.loadConfiguration(modFile);
 
-        // 3. Delegate loading to modules
+        File secFile = new File(plugin.getDataFolder(), "moderation/security-filters.yml");
+
+        if (!secFile.exists()) {
+            plugin.saveResource("moderation/security-filters.yml", false);
+        }
+        this.securityConfig = YamlConfiguration.loadConfiguration(secFile);
+
         this.generalSettings.load(mainConfig);
         this.storageSettings.load(mainConfig);
         this.suggestionSettings.load(mainConfig);
@@ -64,19 +69,17 @@ public class ConfigManager {
         this.filterSettings.load(moderationConfig);
         this.antiSpamSettings.load(moderationConfig);
 
-        // Apply runtime changes
+        this.securitySettings.load(securityConfig);
+
         plugin.setDebugMode(this.generalSettings.isDebugMode());
     }
 
-    // --- Accessors for Modules (The Future) ---
     public StorageSettings getStorageSettings() {
         return storageSettings;
     }
-
     public GeneralSettings getGeneralSettings() {
         return generalSettings;
     }
-
     public FilterSettings getFilterSettings() {
         return filterSettings;
     }
@@ -93,8 +96,9 @@ public class ConfigManager {
         return suggestionSettings;
     }
 
-    // --- Legacy Getters (Delegates using Getters) ---
-    // FIXED: Using public getters instead of direct field access
+    public SecuritySettings getSecuritySettings() {
+        return securitySettings;
+    }
 
     public boolean isUpdateCheck() {
         return generalSettings.isUpdateCheck();

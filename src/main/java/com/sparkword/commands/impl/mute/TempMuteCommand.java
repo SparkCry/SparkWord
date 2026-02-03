@@ -93,7 +93,7 @@ public class TempMuteCommand implements SubCommand {
             if (pid != -1) {
                 env.getStorage().mute(pid, reason, sender.getName(), sec, "TEMPMUTE", MuteInfo.MuteScope.CHAT, success -> {
                     Bukkit.getScheduler().runTask(env.getPlugin(), () -> {
-                        String timeText = env.getMessageManager().getString("moderation.default.temp");
+                        String timeText = TimeUtil.formatDuration(sec);
                         env.getMessageManager().sendMessage(sender, "moderation.mute-success", Map.of("player", name, "time", timeText));
 
                         Player onlineTarget = Bukkit.getPlayerExact(name);

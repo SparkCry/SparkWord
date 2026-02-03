@@ -1,36 +1,44 @@
 # ==============================================================================
 #  SparkWord Configuration v1.1.0
 # ==============================================================================
-
-# Automatically check for updates.
-update-check: true
-
 # Enables debug mode.
 # Prints detailed information to the console regarding filter logic,
 # library loading, and internal errors.
+# ==============================================================================
 debug: false
 
+# ==============================================================================
+# Automatically check for updates.
+# ==============================================================================
+update-check: true
+
+# ==============================================================================
 # Controls the priority of the chat listener.
 # Options: LOWEST, LOW, NORMAL, HIGH, HIGHEST, MONITOR
 # Adjust this if SparkWord conflicts with other chat formatting plugins.
+# ==============================================================================
 event-priority: HIGH
 
+# ==============================================================================
 # Language configuration.
 # This setting determines which language file is loaded from the "locale/" folder.
 # The file must be named matching this code (e.g., "en-US.yml").
 #
 # Available built-in languages:
 # - en_US (English - United States)
-# - es_LA (Spanish - Latin America)
-# - de_DE (German - Germany)
-# - nl_NL (Dutch - Netherlands)
-# - pt_BR (Portuguese - Brazil)
+# - es_LA (Español - Latino America)
+# - de_DE (Deutsch - Deutschland)
+# - nl_NL (Nederland - Nederlands)
+# - pt_BR (Português  - Brasil)
 #
 # You can create your own custom language file by copying one of the existing files
 # and renaming it, then updating this value to match your new file's name.
+# ==============================================================================
 locale: "en_US"
 
+# ==============================================================================
 # Database Configuration
+# ==============================================================================
 storage:
   type: sqlite # sqlite, mysql, mariadb
   host: localhost
@@ -42,26 +50,6 @@ storage:
     maximum-pool-size: 10
     max-lifetime: 1800000 # 30 minutes
     connection-timeout: 5000
-
-# ==============================================================================
-#  Suggestion System
-#  Settings for the player suggestion (/sw sg) command.
-# ==============================================================================
-suggestion:
-  # Enables the suggestion system.
-  enabled: true
-
-  # How long (hours) to keep suggestion data before purging.
-  purge-hours: 72
-
-  # Cooldown (seconds) between suggestions for a single player.
-  suggest-cooldown: 60
-
-  # Maximum length of the suggested word.
-  max-word-length: 20
-
-  # Maximum length of the reason provided.
-  max-reason-length: 100
 
 # ==============================================================================
 #  Notifications
@@ -80,6 +68,29 @@ notifications:
     ip: true
     zalgo: true
     injection: true
+
+# ==============================================================================
+#  Suggestion and Scan System
+#  Settings for the player suggestion (/sw sg) command.
+# ==============================================================================
+suggestion:
+  # Enables the suggestion system.
+  enabled: true
+
+  # How long (hours) to keep suggestion data before purging.
+  purge-hours: 72
+
+  # Cooldown (seconds) between suggestions for a single player.
+  suggest-cooldown: 60
+
+  # Maximum length of the suggested word.
+  max-word-length: 20
+
+  # Maximum length of the reason provided.
+  max-reason-length: 100
+
+#  Configuration to delete the history in days of 'sw-scan'
+history-player: 7
 
 # ==============================================================================
 #  Punishment Presets

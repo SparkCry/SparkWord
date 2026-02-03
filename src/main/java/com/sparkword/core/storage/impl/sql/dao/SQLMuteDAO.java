@@ -34,7 +34,8 @@ import java.util.concurrent.ExecutorService;
 public class SQLMuteDAO extends AbstractSQLDAO implements MuteDAO {
 
     private static final String DELETE_MUTE = "DELETE FROM muted WHERE player_id = ?";
-    private static final String SELECT_MUTE = "SELECT reason, muted_by, expires_at, scope FROM muted WHERE player_id = ?";
+    private static final String SELECT_MUTE = "SELECT reason, muted_by, expires_at, created_at, scope FROM muted WHERE player_id = ?";
+    private static final String PURGE_HISTORY = "DELETE FROM mute_history WHERE created_at < ?";
     private final QueryAdapter queryAdapter;
 
     public SQLMuteDAO(SQLConnectionFactory connectionFactory, ExecutorService writer, ExecutorService reader, QueryAdapter queryAdapter) {
@@ -45,20 +46,33 @@ public class SQLMuteDAO extends AbstractSQLDAO implements MuteDAO {
     @Override
     public CompletableFuture<Void> muteAsync(int playerId, String reason, String by, long durationSeconds, MuteScope scope) {
         return CompletableFuture.runAsync(() -> {
-            long expires = durationSeconds > 0 ? System.currentTimeMillis() + (durationSeconds * 1000) : 0;
-            String sql = queryAdapter.getMuteUpsertQuery();
+            long now = System.currentTimeMillis();
+            long expires = durationSeconds > 0 ? now + (durationSeconds * 1000) : 0;
 
-            try (Connection conn = connectionFactory.getConnection();
-                 PreparedStatement ps = conn.prepareStatement(sql)) {
-                ps.setInt(1, playerId);
-                ps.setString(2, reason);
-                ps.setString(3, by);
-                ps.setLong(4, expires);
-                ps.setLong(5, System.currentTimeMillis());
-                ps.setString(6, scope.name());
-                ps.executeUpdate();
+            String upsertSql = queryAdapter.getMuteUpsertQuery();
+            String historySql = queryAdapter.getMuteHistoryInsertQuery();
+
+            try (Connection conn = connectionFactory.getConnection()) {
+                try (PreparedStatement ps = conn.prepareStatement(upsertSql)) {
+                    ps.setInt(1, playerId);
+                    ps.setString(2, reason);
+                    ps.setString(3, by);
+                    ps.setLong(4, expires);
+                    ps.setLong(5, now);
+                    ps.setString(6, scope.name());
+                    ps.executeUpdate();
+                }
+
+                try (PreparedStatement ps = conn.prepareStatement(historySql)) {
+                    ps.setInt(1, playerId);
+                    ps.setString(2, reason);
+                    ps.setString(3, by);
+                    ps.setLong(4, durationSeconds);
+                    ps.setLong(5, now);
+                    ps.setString(6, scope.name());
+                    ps.executeUpdate();
+                }
             } catch (SQLException e) {
-                // CRITICAL FIX: Propagate exception to allow StorageManager to detect failure
                 throw new CompletionException(e);
             }
         }, writer);
@@ -98,7 +112,10 @@ public class SQLMuteDAO extends AbstractSQLDAO implements MuteDAO {
                 } catch (IllegalArgumentException ignored) {
                 }
 
-                return new MuteInfo(true, rs.getString("muted_by"), rs.getString("reason"), expires, scope);
+                long createdAt = rs.getLong("created_at");
+                if (createdAt == 0) createdAt = System.currentTimeMillis();
+
+                return new MuteInfo(true, rs.getString("muted_by"), rs.getString("reason"), expires, createdAt, scope);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -112,5 +129,20 @@ public class SQLMuteDAO extends AbstractSQLDAO implements MuteDAO {
             MuteInfo info = fetchMuteInfoBlocking(playerId);
             return info.isMuted() ? info.expiry() : -1L;
         }, reader);
+    }
+
+    @Override
+    public CompletableFuture<Integer> purgeHistoryAsync(long daysOld) {
+        return CompletableFuture.supplyAsync(() -> {
+            long timeLimit = System.currentTimeMillis() - (daysOld * 86400000L);
+            try (Connection conn = connectionFactory.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(PURGE_HISTORY)) {
+                ps.setLong(1, timeLimit);
+                return ps.executeUpdate();
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return 0;
+            }
+        }, writer);
     }
 }

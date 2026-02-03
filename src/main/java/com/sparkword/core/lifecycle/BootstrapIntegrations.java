@@ -35,8 +35,7 @@ public class BootstrapIntegrations {
     public void initMetrics(ConfigManager config) {
         Metrics metrics = new Metrics(plugin, BSTATS_ID);
 
-        // CHANGED: Accessing settings via modules
-        metrics.addCustomChart(new SimplePie("database_type", () -> "SQLite")); // Dynamic check could use config.getStorageSettings().getStorageType()
+        metrics.addCustomChart(new SimplePie("database_type", () -> "SQLite"));
         metrics.addCustomChart(new SimplePie("anti_flood_enabled", () ->
             config.getAntiSpamSettings().isAntiFloodEnabled() ? "Yes" : "No"));
     }

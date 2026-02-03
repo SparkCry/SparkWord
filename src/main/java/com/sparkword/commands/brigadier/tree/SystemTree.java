@@ -34,17 +34,17 @@ public class SystemTree implements BrigadierNode {
 
     public static void attachSubCommands(LiteralArgumentBuilder<CommandSourceStack> swNode, CommandManager manager) {
         swNode.then(Commands.literal("info")
-            .requires(s -> s.getSender().hasPermission("sparkword.info"))
-            .executes(ctx -> {
-                manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "info");
-                return 1;
-            })
-            .then(Commands.argument("page", IntegerArgumentType.integer(1))
+                .requires(s -> s.getSender().hasPermission("sparkword.info"))
                 .executes(ctx -> {
-                    manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "info", String.valueOf(IntegerArgumentType.getInteger(ctx, "page")));
+                    manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "info");
                     return 1;
-                }))
-        );
+                })
+                .then(Commands.argument("page", IntegerArgumentType.integer(1))
+                    .executes(ctx -> {
+                        manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "info", String.valueOf(IntegerArgumentType.getInteger(ctx, "page")));
+                        return 1;
+                    }))
+                   );
 
         swNode.then(Commands.literal("reload").requires(s -> s.getSender().hasPermission("sparkword.reload"))
             .executes(ctx -> {
@@ -68,12 +68,11 @@ public class SystemTree implements BrigadierNode {
             .requires(s -> s.getSender().hasPermission("sparkword.notify"))
             .executes(ctx -> run(manager, ctx, "sw-internal"))
             .then(Commands.literal("viewbook")
-                // Added execute handler here
-                .executes(ctx -> run(manager, ctx, "sw-internal", "viewbook"))
-                .then(Commands.argument("id", StringArgumentType.word())
-                    .executes(ctx -> run(manager, ctx, "sw-internal", "viewbook", StringArgumentType.getString(ctx, "id")))
-                )
-            );
+                    .executes(ctx -> run(manager, ctx, "sw-internal", "viewbook"))
+                    .then(Commands.argument("id", StringArgumentType.word())
+                            .executes(ctx -> run(manager, ctx, "sw-internal", "viewbook", StringArgumentType.getString(ctx, "id")))
+                         )
+                 );
 
         LiteralCommandNode<CommandSourceStack> internalNode = internalBuilder.build();
         commands.register(internalNode, "Internal", Collections.emptyList());

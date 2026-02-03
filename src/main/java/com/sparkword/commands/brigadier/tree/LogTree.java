@@ -35,66 +35,67 @@ public class LogTree implements BrigadierNode {
 
     public static void attachSubCommands(LiteralArgumentBuilder<CommandSourceStack> swNode, CommandManager manager) {
         swNode.then(Commands.literal("audit").requires(s -> s.getSender().hasPermission("sparkword.audit"))
-            .executes(ctx -> {
-                manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "audit");
-                return 1;
-            })
-            .then(Commands.argument("player", StringArgumentType.word())
-                .suggests(BrigadierUtils::suggestOnlinePlayers)
                 .executes(ctx -> {
-                    manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "audit", StringArgumentType.getString(ctx, "player"));
+                    manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "audit");
                     return 1;
                 })
-            )
-        );
+                .then(Commands.argument("player", StringArgumentType.word())
+                        .suggests(BrigadierUtils::suggestOnlinePlayers)
+                        .executes(ctx -> {
+                            manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "audit", StringArgumentType.getString(ctx, "player"));
+                            return 1;
+                        })
+                     )
+                   );
 
         swNode.then(Commands.literal("logs").requires(s -> s.getSender().hasPermission("sparkword.logs"))
-            .executes(ctx -> {
-                manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "logs");
-                return 1;
-            })
-            .then(Commands.argument("type", StringArgumentType.word())
-                .suggests((ctx, b) -> {
-                    b.suggest("b");
-                    b.suggest("m");
-                    b.suggest("w");
-                    b.suggest("all");
-                    return b.buildFuture();
-                })
                 .executes(ctx -> {
-                    manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "logs", StringArgumentType.getString(ctx, "type"));
+                    manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "logs");
                     return 1;
                 })
-                .then(Commands.argument("page", IntegerArgumentType.integer(1))
-                    .executes(ctx -> {
-                        manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "logs", StringArgumentType.getString(ctx, "type"), String.valueOf(IntegerArgumentType.getInteger(ctx, "page")));
-                        return 1;
-                    }))
-            )
-        );
+                .then(Commands.argument("type", StringArgumentType.word())
+                        .suggests((ctx, b) -> {
+                            b.suggest("b");
+                            b.suggest("m");
+                            b.suggest("w");
+                            b.suggest("all");
+                            return b.buildFuture();
+                        })
+                        .executes(ctx -> {
+                            manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "logs", StringArgumentType.getString(ctx, "type"));
+                            return 1;
+                        })
+                        .then(Commands.argument("page", IntegerArgumentType.integer(1))
+                            .executes(ctx -> {
+                                manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "logs", StringArgumentType.getString(ctx, "type"), String.valueOf(IntegerArgumentType.getInteger(ctx, "page")));
+                                return 1;
+                            }))
+                     )
+                   );
 
         swNode.then(Commands.literal("purge").requires(s -> s.getSender().hasPermission("sparkword.purge.logs"))
-            // Added execute handler here to trigger usage message
-            .executes(ctx -> {
-                manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "purge");
-                return 1;
-            })
-            .then(Commands.argument("type", StringArgumentType.word())
-                .suggests((ctx, b) -> {
-                    b.suggest("sg");
-                    b.suggest("m");
-                    b.suggest("w");
-                    b.suggest("b");
-                    b.suggest("a");
-                    return b.buildFuture();
+
+                .executes(ctx -> {
+                    manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "purge");
+                    return 1;
                 })
-                .then(Commands.argument("days", IntegerArgumentType.integer(0))
-                    .executes(ctx -> {
-                        manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "purge", StringArgumentType.getString(ctx, "type"), String.valueOf(IntegerArgumentType.getInteger(ctx, "days")));
-                        return 1;
-                    }))
-            )
-        );
+                .then(Commands.argument("type", StringArgumentType.word())
+                        .suggests((ctx, b) -> {
+                            b.suggest("sg");
+                            b.suggest("m");
+                            b.suggest("w");
+                            b.suggest("b");
+                            b.suggest("a");
+                            b.suggest("hp");
+                            return b.buildFuture();
+                        })
+                        .then(Commands.argument("days", IntegerArgumentType.integer(0))
+                            .executes(ctx -> {
+                                manager.dispatchFromBrigadier(ctx.getSource().getSender(), "sw", "purge", StringArgumentType.getString(ctx, "type"), String.valueOf(IntegerArgumentType.getInteger(ctx, "days")));
+                                return 1;
+                            }))
+                     )
+                   );
     }
 
     @Override
@@ -103,12 +104,12 @@ public class LogTree implements BrigadierNode {
             .requires(src -> src.getSender().hasPermission("sparkword.scan"))
             .executes(ctx -> run(manager, ctx, "sw-scan"))
             .then(Commands.argument("player", StringArgumentType.word())
-                .suggests(BrigadierUtils::suggestOnlinePlayers)
-                .executes(ctx -> run(manager, ctx, "sw-scan", StringArgumentType.getString(ctx, "player")))
-                .then(Commands.argument("page", IntegerArgumentType.integer(1))
-                    .executes(ctx -> run(manager, ctx, "sw-scan", StringArgumentType.getString(ctx, "player"), String.valueOf(IntegerArgumentType.getInteger(ctx, "page"))))
-                )
-            );
+                    .suggests(BrigadierUtils::suggestOnlinePlayers)
+                    .executes(ctx -> run(manager, ctx, "sw-scan", StringArgumentType.getString(ctx, "player")))
+                    .then(Commands.argument("page", IntegerArgumentType.integer(1))
+                            .executes(ctx -> run(manager, ctx, "sw-scan", StringArgumentType.getString(ctx, "player"), String.valueOf(IntegerArgumentType.getInteger(ctx, "page"))))
+                         )
+                 );
 
         LiteralCommandNode<CommandSourceStack> node = builder.build();
         commands.register(node, "Player history", Collections.emptyList());

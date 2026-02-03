@@ -167,8 +167,7 @@ public class StorageManager {
                     return;
                 }
 
-                // Explicitly update cache immediately
-                MuteInfo newInfo = new MuteInfo(true, by, reason, expiry, scope);
+                MuteInfo newInfo = new MuteInfo(true, by, reason, expiry, now, scope);
                 Bukkit.getScheduler().runTask(plugin, () -> {
                     if (plugin.getEnvironment().getPlayerDataManager() != null) {
                         plugin.getEnvironment().getPlayerDataManager().updateMuteDirectly(playerId, newInfo);
@@ -207,8 +206,8 @@ public class StorageManager {
 
     public void addWarning(int playerId, String reason, String moderator) {
         warnings.addWarningAsync(playerId, reason, moderator).thenCompose(v ->
-            players.getPlayerNameAsync(playerId)
-        ).thenAccept(targetName -> {
+                players.getPlayerNameAsync(playerId)
+                                                                         ).thenAccept(targetName -> {
             audit.logAuditAsync(moderator, "WARN", "Player: " + targetName + " | Reason: " + reason);
         });
     }
@@ -248,13 +247,15 @@ public class StorageManager {
             CompletableFuture<Integer> sg = suggestions.purgeAsync(days);
             CompletableFuture<Integer> bl = monitor.purgeAsync(days);
             CompletableFuture<Integer> au = audit.purgeAsync(days);
-            return sg.join() + bl.join() + au.join();
+            CompletableFuture<Integer> mh = mutes.purgeHistoryAsync(days);
+            return sg.join() + bl.join() + au.join() + mh.join();
         }
 
         CompletableFuture<Integer> future = switch (type) {
             case "sg" -> suggestions.purgeAsync(days);
             case "b" -> monitor.purgeAsync(days);
             case "a" -> audit.purgeAsync(days);
+            case "hp" -> mutes.purgeHistoryAsync(days);
             default -> CompletableFuture.completedFuture(0);
         };
         return future.join();

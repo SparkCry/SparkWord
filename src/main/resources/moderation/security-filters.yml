@@ -1,0 +1,118 @@
+# -----------------------------------------------------------------------------
+# SparkWord Security Filters Configuration
+# -----------------------------------------------------------------------------
+
+domain-filter:
+  # Whitelisted Domains
+  # These will bypass the filter even if they match a blocked pattern.
+  whitelist:
+    - "google.com"
+    - "youtube.com"
+    - "wikipedia.org"
+    - "spigotmc.org"
+    - "github.com"
+
+  # Smart Blacklist
+  # Add domains here that you want to strictly block (e.g., evasion attempts).
+  # The plugin will automatically strip dots and symbols to detect variations.
+  # Example: "server.us" catches "server.us", "server us", "serverus"
+  blacklist:
+    - "server.us"
+    - "discord.gg"
+    - "phub.com"
+
+  # Dot Patterns
+  # Characters or words that should be interpreted as a "." (dot).
+  # Regex is supported if the pattern contains a backslash (e.g. \p{P}).
+  # Simple words automatically capture closures like [dot], (dot).
+  dot:
+    - '[\p{P}\p{S}]' # <-- Unicode REGEX: Removes punctuation and symbols. Very important.
+    - "dot"          # literal word: capture "dot", "[dot]", "(dot)", "{dot}", etc.
+    - "point"
+    - "punto"
+
+  # Blocked TLDs
+  # If a word ends with a dot followed by one of these, it triggers the check.
+  # The system now detects these even if spaced out (e.g., ". c o m").
+blocked-tlds:
+
+  # Classic gTLDs (extremely high use in malicious links)
+  - "com"
+  - "net"
+  - "org"
+  - "info"
+  - "biz"
+  - "pro"
+  - "site"
+  - "online"
+  - "club"
+  - "vip"
+  - "top"
+  - "xyz"
+  - "link"
+  - "click"
+  - "shop"
+  - "store"
+  - "loan"
+  - "work"
+  - "space"
+  - "live"
+  - "world"
+  - "today"
+  - "news"
+
+  # gTLDs with high abuse/phishing rates
+  - "icu"
+  - "win"
+  - "bid"
+  - "pw"
+  - "cfd"
+  - "bond"
+  - "buzz"
+  - "xin"
+  - "men"
+  - "stream"
+  - "party"
+  - "fun"
+  - "monster"
+  - "support"
+  - "help"
+  - "review"
+  - "download"
+
+  # Free or historically abused ccTLDs (Freenom)
+  - "tk"
+  - "ml"
+  - "ga"
+  - "cf"
+  - "gq"
+
+  # ccTLDs commonly used in malicious campaigns
+  - "ru"
+  - "cn"
+  - "br"
+  - "in"
+  - "vn"
+  - "bd"
+  - "pk"
+  - "ir"
+  - "kp"
+
+  # Widely used ccTLDs (Regional)
+  - "es"
+  - "mx"
+  - "ar"
+  - "co"
+  - "cl"
+  - "pe"
+  - "eu"
+  - "me"
+  - "tv"
+  - "io"
+  - "gg"
+
+  # Institutional TLDs (frequent spoofing)
+  - "edu"
+  - "gov"
+  - "mil"
+  - "int"
